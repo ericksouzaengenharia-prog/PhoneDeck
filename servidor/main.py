@@ -35,7 +35,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 import config  # noqa: E402
 
-VERSION = "2.4"
+VERSION = "2.6"
 IS_WINDOWS = sys.platform == "win32"
 VIRTUAL_IF = re.compile(r"vethernet|virtualbox|vmware|hyper-v|loopback|wsl|docker|tailscale|zerotier|vpn|bluetooth",
                         re.I)
@@ -121,7 +121,7 @@ class Deck:
     # ----------------------------------------------------------------- util
     def layout_has(self, stat: str) -> bool:
         return any((b.get("action") or {}).get("type") == "stat" and b["action"].get("stat") == stat
-                   for p in self.layout.get("pages", []) for b in p.get("buttons", []))
+                   for b in config.all_buttons(self.layout))
 
     def _layout_mtime(self) -> float:
         try:
@@ -274,6 +274,21 @@ class Deck:
                     "off": "em espera (liga quando o cabo ou o celular conectar)",
                     "ready": f"modo atalho ({html.escape(self.settings['clip'].get('hotkey', ''))})",
                     "error": f"erro: {html.escape(clip.get('error') or '')}"}.get(clip["status"], "")
+        pipe = self.clipper.pipeline_text()
+        if pipe:
+            b = clip.get("boost") or {}
+            prio = f" · prioridade na GPU: {b['gpu']}" if b.get("gpu") else (" · prioridade na GPU: normal" if b else "")
+            clip_txt += f" · {html.escape(pipe)}, {clip['fps']} fps{html.escape(prio)}"
+        lc = clip.get("last_check") or {}
+        clip_check = ""
+        if lc:
+            if lc["ok"]:
+                clip_check = f"Último clipe: {lc['fps']:.0f} fps reais ✔<br>"
+            else:
+                clip_check = (f'<span class="bad">Último clipe: só {lc["fps"]:.0f} fps reais (de {lc["target"]}).</span> '
+                             'Com o jogo usando a GPU toda, sobra pouco para gravar: <b>limite o FPS do jogo</b> uns 10% '
+                             'abaixo do que ele alcança (ou ao Hz do monitor) e use <b>tela cheia sem bordas</b>. '
+                             'Se não resolver, use o replay da NVIDIA/AMD no modo atalho (veja o guia).<br>')
         aud = clip.get("audio", {})
         aud_txt = ", ".join(f"{'som do PC' if k == 'system' else 'microfone'} {'✔' if v.get('ok') else '—'}"
                             for k, v in aud.items()) or "sem áudio"
@@ -295,6 +310,7 @@ class Deck:
 <style>
  body{{font-family:Segoe UI,system-ui,sans-serif;background:#0b0d12;color:#e5e7eb;margin:0;padding:32px}}
  h1{{margin:0 0 4px;font-size:28px}} .sub{{color:#9ca3af;margin:0 0 24px}}
+ .bad{{color:#fca5a5;font-weight:600}}
  .wrap{{max-width:1000px;margin:0 auto}}
  .cards{{display:flex;flex-wrap:wrap;gap:20px;margin:20px 0}}
  .card{{background:#151923;border:1px solid #262c3a;border-radius:16px;padding:18px;width:280px}}
@@ -324,6 +340,7 @@ class Deck:
 <p>Código de acesso (se o app pedir): <span class="pin">{html.escape(self.token)}</span></p>
 <p><a href="/" target="_blank">Abrir o deck aqui no PC</a> (útil para editar os botões com mouse e teclado).</p>
 <p class="meta">Clipe: {clip_txt} · Áudio no clipe: {aud_txt}<br>
+ {clip_check}
  GPU: {html.escape(self.stats.gpu_source)} · Música: {'controle do Windows ✔' if self.media.available else 'teclas de mídia'}<br>
  {fps_html}<br>
  Ícone na área de trabalho: {'✔' if st['desktop'] else '—'} · Liga sozinho ao conectar o cabo: {'✔' if st['startup'] else '—'}<br>
@@ -370,6 +387,7 @@ class Deck:
                 task.add_done_callback(self._tasks.discard)
         finally:
             self.clients.discard(ws)
+            self.release_held()  # celular caiu no meio de um arrasto: solta botão/tecla presos
             self._last_need = time.time()
             print(f"[conexão] desconectado: {request.remote}  (total: {len(self.clients)})")
         return ws
@@ -403,6 +421,8 @@ class Deck:
             if t in ("mic", "media", "player"):
                 await asyncio.sleep(0.3)
                 await self.tick()  # atualiza mic/volume/música na hora
+            elif t == "clip" and self.clipper.mode == "ffmpeg" and self.settings["clip"].get("check_fps", True):
+                asyncio.create_task(self.check_clip())
 
         elif kind == "save_layout":
             try:
@@ -431,8 +451,78 @@ class Deck:
                 print(f"[jogos] erro ao procurar: {e}")
             await ws.send_json({"type": "games", "items": items})
 
+        elif kind == "remote":  # touchpad e teclado do celular
+            if not self.settings.get("remote_control", True):
+                await ws.send_json({"type": "result", "id": "_remote", "ok": False,
+                                    "msg": "Controle remoto desligado no settings.json (remote_control)"})
+                return
+            try:
+                self.remote_input(data)
+            except Exception as e:
+                await ws.send_json({"type": "result", "id": "_remote", "ok": False, "msg": str(e)})
+
         elif kind == "ping":
             await ws.send_json({"type": "pong", "t": data.get("t")})
+
+    def release_held(self) -> None:
+        import winkeys
+        for kind, name in list(getattr(self, "held", set())):
+            try:
+                winkeys.mouse_button(name, "up") if kind == "btn" else winkeys.key_tap(name, False)
+            except Exception:
+                pass
+        self.held = set()
+
+    def remote_input(self, d: dict) -> None:
+        """Mouse/teclado vindos do celular. Rápido (microssegundos): roda direto, sem fila."""
+        import winkeys
+        if not hasattr(self, "held"):
+            self.held = set()
+        op = d.get("op")
+        clamp = lambda v, m: max(-m, min(m, int(float(v or 0))))
+        if op == "move":
+            winkeys.mouse_move(clamp(d.get("dx"), 2000), clamp(d.get("dy"), 2000))
+        elif op == "button":
+            btn = d.get("button") if d.get("button") in ("left", "right", "middle") else "left"
+            act = d.get("action") if d.get("action") in ("down", "up", "click", "double") else "click"
+            if act == "double":
+                winkeys.mouse_button(btn, "click")
+                winkeys.mouse_button(btn, "click")
+            else:
+                winkeys.mouse_button(btn, act)
+                (self.held.add if act == "down" else self.held.discard)(("btn", btn))
+        elif op == "wheel":
+            winkeys.mouse_wheel(clamp(d.get("dy"), 2400), clamp(d.get("dx"), 2400))
+        elif op == "text":
+            text = str(d.get("text", ""))[:500]
+            if text:
+                winkeys.type_text(text)
+        elif op == "key":  # ex.: "enter", "ctrl+c", "alt+tab"
+            combo = str(d.get("keys", ""))[:60]
+            if combo:
+                winkeys.press_combo(winkeys.parse_combo(combo), hold=0.02)
+        elif op == "hold":  # segura/solta um modificador (ex.: alt para alt+tab várias vezes)
+            name = str(d.get("key", ""))
+            if name in ("ctrl", "alt", "shift", "win"):
+                winkeys.key_tap(name, bool(d.get("down")))
+                (self.held.add if d.get("down") else self.held.discard)(("key", name))
+
+    async def check_clip(self) -> None:
+        """Conta os quadros novos do clipe que acabou de ser salvo e avisa o celular."""
+        try:
+            r = await asyncio.get_running_loop().run_in_executor(self.io, self.clipper.check_last_clip)
+        except Exception as e:
+            print(f"[clipe] não consegui conferir: {e}")
+            return
+        if not r:
+            return
+        fps_txt = f"{r['fps']:.0f}"
+        print(f"[clipe] {r['file']}: {r['fps']} quadros novos por segundo (alvo {r['target']}) | {r['pipeline']}")
+        if r["ok"]:
+            msg, kind = f"Clipe conferido: {fps_txt} fps ✔", "ok"
+        else:
+            msg, kind = f"Clipe com só {fps_txt} fps: a GPU ficou sem folga. Limite o FPS do jogo (dicas na página do PC)", "warn"
+        await self.broadcast({"type": "notice", "kind": kind, "msg": msg})
 
     # ------------------------------------------------------- tarefas fundo
     async def tick(self) -> None:

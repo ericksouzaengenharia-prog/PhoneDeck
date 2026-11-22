@@ -64,6 +64,9 @@ const ICONS = {
   'sliders': '<line x1="4" y1="21" x2="4" y2="14"/><line x1="4" y1="10" x2="4" y2="3"/><line x1="12" y1="21" x2="12" y2="12"/><line x1="12" y1="8" x2="12" y2="3"/><line x1="20" y1="21" x2="20" y2="16"/><line x1="20" y1="12" x2="20" y2="3"/><line x1="1" y1="14" x2="7" y2="14"/><line x1="9" y1="8" x2="15" y2="8"/><line x1="17" y1="16" x2="23" y2="16"/>',
   'trash': '<polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/>',
   'copy': '<rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>',
+  'mouse': '<rect x="6" y="3" width="12" height="18" rx="6"/><line x1="12" y1="7" x2="12" y2="11"/>',
+  'pin': '<path d="M9 4h6l-1 6 3 3v2H7v-2l3-3z"/><line x1="12" y1="15" x2="12" y2="21"/>',
+  'backspace': '<path d="M21 5H8l-6 7 6 7h13a1 1 0 0 0 1-1V6a1 1 0 0 0-1-1z"/><line x1="17" y1="9" x2="11" y2="15"/><line x1="11" y1="9" x2="17" y2="15"/>',
   'expand': '<polyline points="15 3 21 3 21 9"/><polyline points="9 21 3 21 3 15"/><line x1="21" y1="3" x2="14" y2="10"/><line x1="3" y1="21" x2="10" y2="14"/>',
   'x': '<line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>',
   'left': '<polyline points="15 18 9 12 15 6"/>',
@@ -71,7 +74,7 @@ const ICONS = {
 };
 
 // Ícones oferecidos no seletor (os da interface ficam de fora)
-const PICKABLE = Object.keys(ICONS).filter(k => !['pencil', 'check', 'plus', 'sliders', 'trash', 'copy', 'left', 'right', 'warn', 'palette', 'expand', 'x'].includes(k));
+const PICKABLE = Object.keys(ICONS).filter(k => !['pencil', 'check', 'plus', 'sliders', 'trash', 'copy', 'left', 'right', 'warn', 'palette', 'expand', 'x', 'pin', 'backspace'].includes(k));
 
 function icon(name) {
   const svg = ICONS[name];

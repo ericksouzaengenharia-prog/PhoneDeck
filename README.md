@@ -26,13 +26,15 @@
 
 | | |
 |---|---|
-| 🎬 **Clipe dos últimos segundos** | Grava a tela em segundo plano e salva os últimos 15 s (ou 30 s) num `.mp4`, **com o som do PC e o microfone**. Usa a placa de vídeo (NVIDIA, AMD ou Intel). |
+| 🎬 **Clipe dos últimos segundos** | Grava a tela em segundo plano e salva os últimos 15 s (ou 30 s) num `.mp4`, **com o som do PC e o microfone**. Usa a placa de vídeo (NVIDIA, AMD ou Intel) com prioridade alta e confere cada clipe ("30 fps ✔"). |
 | 📈 **Gráficos ao vivo** | GPU, CPU, RAM, temperatura e VRAM com gráfico do último minuto e máx / méd / mín ao lado. |
 | 🖥️ **Tela cheia** | Toque num gráfico ou no painel de música para ver em tela cheia e deslize para passar por música, GPU, CPU, RAM e FPS (você escolhe quais e a ordem). |
 | 🎯 **FPS do jogo** | FPS do jogo aberto com gráfico, máx, méd, mín e 1% low. Funciona em qualquer jogo, sem sobreposição na tela (usa o PresentMon da Intel). |
 | 🎵 **Painel do Spotify** | Capa, música e artista, com aleatório, voltar, play/pause e próxima. |
 | 🎮 **Jogos e apps** | Acha sozinho os jogos instalados na **Epic, EA app e Steam** e abre pelo launcher certo, além de qualquer programa, pasta ou site. |
 | 🎙️ **Controles do PC** | Mutar microfone (fica vermelho quando mutado), volume, mudo, área de trabalho, print, bloquear o PC. |
+| 🖱️ **Mouse e teclado** | O celular vira touchpad (clique, botão direito, rolagem com 2 dedos, arrastar) e teclado para mexer no PC de longe. |
+| 📌 **Botões fixos** | Até 3 botões que aparecem em todas as páginas e na tela cheia. Vem com o **Clipe 15s** fixo no topo. |
 | ⌨️ **Atalhos e macros** | Qualquer combinação de teclas (`ctrl+shift+m`) ou sequências (`ctrl+c, alt+tab, ctrl+v`), digitar textos e rodar comandos. |
 | 👆 **Toque à prova de engano** | Botões grandes (3 colunas em pé, 5 deitado) e páginas que trocam deslizando para o lado. O botão só aciona quando você solta o dedo: encostou no errado, arraste para fora. Botões perigosos pedem para segurar. |
 | ✏️ **Totalmente editável** | Pelo próprio celular: nome, ícone (ou emoji), cor, ação, tamanho do bloco e posição, páginas e número de colunas. |

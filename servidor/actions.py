@@ -116,6 +116,9 @@ def run_action(action: dict, clipper, media=None, sub: str = "") -> str:
         winkeys.lock_workstation()
         return ""
 
+    if t == "remote":  # o touchpad abre no próprio celular; nada a fazer aqui
+        return ""
+
     if t == "open_clips":
         d = clipper.output_dir()
         _open(str(d))

@@ -160,6 +160,49 @@ if IS_WINDOWS:
     def lock_workstation() -> None:
         user32.LockWorkStation()
 
+    # ---- mouse (touchpad do celular) ----
+    INPUT_MOUSE = 0
+    MOUSEEVENTF_MOVE = 0x0001
+    MOUSEEVENTF_WHEEL = 0x0800
+    MOUSEEVENTF_HWHEEL = 0x1000
+    _BTN = {"left": (0x0002, 0x0004), "right": (0x0008, 0x0010), "middle": (0x0020, 0x0040)}
+
+    def _mouse_input(flags: int, dx: int = 0, dy: int = 0, data: int = 0) -> INPUT:
+        inp = INPUT(type=INPUT_MOUSE)
+        inp.mi = MOUSEINPUT(dx=dx, dy=dy, mouseData=data & 0xFFFFFFFF, dwFlags=flags, time=0, dwExtraInfo=0)
+        return inp
+
+    def mouse_move(dx: int, dy: int) -> None:
+        """Movimento relativo (como um mouse de verdade: respeita a velocidade do ponteiro do Windows)."""
+        if dx or dy:
+            _send([_mouse_input(MOUSEEVENTF_MOVE, int(dx), int(dy))])
+
+    def mouse_button(button: str, action: str = "click") -> None:
+        down, up = _BTN.get(button, _BTN["left"])
+        if action == "down":
+            _send([_mouse_input(down)])
+        elif action == "up":
+            _send([_mouse_input(up)])
+        else:
+            _send([_mouse_input(down), _mouse_input(up)])
+
+    def mouse_wheel(dy: int = 0, dx: int = 0) -> None:
+        """Rolagem: 120 = um "dente" da rodinha. Valores menores dão rolagem suave nos apps que aceitam."""
+        inputs = []
+        if dy:
+            inputs.append(_mouse_input(MOUSEEVENTF_WHEEL, data=int(dy)))
+        if dx:
+            inputs.append(_mouse_input(MOUSEEVENTF_HWHEEL, data=int(dx)))
+        _send(inputs)
+
+    def key_tap(name: str, down: bool | None = None) -> None:
+        """Aperta (down=True), solta (down=False) ou toca (None) uma tecla."""
+        vk = VK[name]
+        if down is None:
+            press_combo([vk], hold=0.01)
+        else:
+            _send([_key_input(vk, not down)])
+
 else:  # fora do Windows: modo demonstração (só registra no console)
     def press_combo(codes: list[int], hold: float = 0.04) -> None:
         print(f"[demo] teclas: {[hex(c) for c in codes]}")
@@ -169,6 +212,23 @@ else:  # fora do Windows: modo demonstração (só registra no console)
 
     def lock_workstation() -> None:
         print("[demo] bloquear PC")
+
+    DEMO_MOUSE = {"x": 0, "y": 0, "clicks": [], "wheel": 0}  # estado simulado (testes fora do Windows)
+
+    def mouse_move(dx: int, dy: int) -> None:
+        DEMO_MOUSE["x"] += int(dx)
+        DEMO_MOUSE["y"] += int(dy)
+
+    def mouse_button(button: str, action: str = "click") -> None:
+        DEMO_MOUSE["clicks"].append(f"{button}:{action}")
+        print(f"[demo] mouse {button} {action}")
+
+    def mouse_wheel(dy: int = 0, dx: int = 0) -> None:
+        DEMO_MOUSE["wheel"] += int(dy)
+
+    def key_tap(name: str, down: bool | None = None) -> None:
+        VK[name]
+        print(f"[demo] tecla {name} {'' if down is None else ('apertada' if down else 'solta')}")
 
 
 def send_hotkey(text: str) -> None:

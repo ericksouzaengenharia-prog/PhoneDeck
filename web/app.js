@@ -24,6 +24,7 @@ const ACTIONS = [
   ['open', 'Abrir programa, pasta ou site'],
   ['run', 'Rodar comando'],
   ['text', 'Digitar texto'],
+  ['remote', 'Mouse e teclado (touchpad)'],
   ['stat', 'Mostrador ao vivo (GPU, CPU…)'],
   ['page', 'Ir para outra página'],
   ['open_clips', 'Abrir pasta de clipes'],
@@ -46,8 +47,10 @@ const SUGGEST = { // nome e ícone sugeridos ao escolher a ação
   mic: ['Microfone', 'mic'], hotkey: ['Atalho', 'keyboard'], clip: ['Clipe', 'clip'], desktop: ['Área de trabalho', 'desktop'],
   open: ['Abrir', 'gamepad'], run: ['Comando', 'terminal'], text: ['Texto', 'type'], page: ['Página', 'grid'],
   open_clips: ['Meus clipes', 'folder'], lock: ['Bloquear PC', 'lock'], player: ['Spotify', 'music'], none: ['', ''],
-  game: ['Jogo', 'gamepad'],
+  game: ['Jogo', 'gamepad'], remote: ['Mouse e teclado', 'mouse'],
 };
+const NOT_PINNABLE = ['stat', 'player', 'none']; // blocos grandes não cabem na faixa fixa
+const MAX_PINNED = 3;
 const COLORS = ['#1f2937', '#334155', '#7f1d1d', '#b91c1c', '#c2410c', '#a16207', '#4d7c0f', '#15803d',
   '#065f46', '#0e7490', '#1d4ed8', '#4338ca', '#6d28d9', '#a21caf', '#be185d', '#000000'];
 const GRAPH = { gpu: 'gpu', cpu: 'cpu', ram: 'ram', gputemp: 'gputemp', vram: 'vram', fps: 'fps' };
@@ -201,6 +204,9 @@ function onMessage(m) {
       S.games = m.items || [];
       renderPicker();
       break;
+    case 'notice': // ex.: resultado da conferência do clipe
+      toast(m.msg || '', m.kind === 'warn' ? 'warn' : '');
+      break;
   }
 }
 
@@ -225,7 +231,19 @@ $('#pin').addEventListener('keydown', e => { if (e.key === 'Enter') $('#pinOk').
 
 // ------------------------------------------------------------------ helpers
 function findBtn(id) {
+  for (const b of S.layout?.pinned || []) if (b.id === id) return b;
   for (const p of S.layout?.pages || []) for (const b of p.buttons) if (b.id === id) return b;
+  return null;
+}
+// onde o botão mora: na faixa fixa ou numa página
+function locate(id) {
+  const pin = S.layout.pinned || [];
+  const i = pin.findIndex(x => x.id === id);
+  if (i >= 0) return { list: pin, i, pinned: true };
+  for (const p of S.layout.pages) {
+    const j = p.buttons.findIndex(x => x.id === id);
+    if (j >= 0) return { list: p.buttons, i: j, pinned: false, page: p };
+  }
   return null;
 }
 function curPage() { return S.layout.pages.find(p => p.id === S.page) || S.layout.pages[0]; }
@@ -240,7 +258,7 @@ function toast(msg, kind = '') {
   const t = $('#toast');
   t.textContent = msg; t.className = 'show ' + kind;
   clearTimeout(toastTimer);
-  toastTimer = setTimeout(() => { t.className = kind; }, kind === 'err' ? 3500 : 2200);
+  toastTimer = setTimeout(() => { t.className = kind; }, kind === 'warn' ? 8000 : kind === 'err' ? 3500 : 2200);
 }
 function flash(el, cls) {
   el.classList.remove('ok', 'err'); void el.offsetWidth; el.classList.add(cls);
@@ -299,7 +317,7 @@ function keyHTML(b, opts = {}) {
     return `<div class="key empty" ${data}>${S.edit && !opts.preview ? `<div class="lbl" style="opacity:.5">vazio</div>${edit}` : ''}</div>`;
   }
   const hold = b.hold ? `<span class="holdmark" title="Segure para acionar">${icon('clock')}</span>` : '';
-  return `<button class="key" ${data} ${style}><div class="ico">${icon(b.icon)}</div>` +
+  return `<button class="key${opts.pin ? ' pin' : ''}" ${data} ${style}><div class="ico">${icon(b.icon)}</div>` +
     `<div class="lbl">${esc(b.label)}</div>${a.type === 'clip' ? '<span class="dot"></span>' : ''}${hold}${edit}</button>`;
 }
 
@@ -318,11 +336,23 @@ function render() {
   $('#tabs').innerHTML = S.layout.pages.map(p =>
     `<button class="tab${p.id === page.id ? ' on' : ''}" data-page="${esc(p.id)}">${esc(p.name)}</button>`).join('') +
     (S.edit ? '<button class="tab add" data-newpage="1" title="Nova página">＋</button>' : '');
+  renderPinned();
   S.renderCols = currentCols();
   $('#deck').innerHTML = page.buttons.map(b => keyHTML(b)).join('') +
     (S.edit ? `<button class="key add" data-add="1" data-w="1" data-h="1"><div class="ico">${icon('plus')}</div><div class="lbl">Adicionar</div></button>` : '');
   sizeDeck();
   updateLive();
+}
+
+// Botões fixos: embaixo das abas (em pé), na coluna da esquerda (deitado) e no topo da tela cheia
+function pinnedHTML(inFocus) {
+  const pins = (S.layout.pinned || []).filter(b => !NOT_PINNABLE.includes((b.action || {}).type));
+  if (!pins.length) return S.edit && !inFocus ? '<span class="pin-hint">Botões fixos: edite um botão › <b>Fixar no topo</b></span>' : '';
+  return pins.map(b => keyHTML(b, { pin: true, cols: 1, preview: inFocus && S.edit })).join('');
+}
+function renderPinned() {
+  $('#pinned').innerHTML = pinnedHTML(false);
+  if (FS.open) $('#fsPinned').innerHTML = pinnedHTML(true);
 }
 
 // Simula o encaixe "denso" da grade para saber quantas linhas vão existir
@@ -451,7 +481,7 @@ function updateLive() {
   if (!S.layout) return;
   const t = S.tick || {};
   const au = t.audio || {};
-  for (const el of $$('#deck .key[data-id]')) {
+  for (const el of $$('#deck .key[data-id], .pinned .key[data-id]')) {
     const b = findBtn(el.dataset.id);
     if (!b) continue;
     const a = b.action || {};
@@ -541,7 +571,7 @@ const HOLD_MS = 600;
 const TAP = { cur: null };
 const tapMode = () => LS.get('pd_tap', 'release');
 
-$('#deck').addEventListener('pointerdown', e => {
+function onKeyDown(e) {
   if (S.edit || (e.pointerType === 'mouse' && e.button !== 0)) return;
   const el = e.target.closest('.key[data-id]');
   if (!el) return;
@@ -564,7 +594,16 @@ $('#deck').addEventListener('pointerdown', e => {
   target.classList.add('pressed');
   if (t.hold) startHold(t);
   else if (tapMode() === 'down' && !focus) fireTap(t);
+}
+$('#deck').addEventListener('pointerdown', onKeyDown);
+$('#pinned').addEventListener('pointerdown', onKeyDown);
+$('#fsPinned').addEventListener('pointerdown', onKeyDown);
+$('#pinned').addEventListener('click', e => {
+  if (!S.edit) return;
+  const el = e.target.closest('.key[data-id]');
+  if (el) openEditor(el.dataset.id);
 });
+$('#pinned').addEventListener('contextmenu', e => e.preventDefault());
 function insideTarget(t, e) {
   const r = t.target.getBoundingClientRect(), m = 14; // tolerância de 14 px em volta do botão
   return e.clientX >= r.left - m && e.clientX <= r.right + m && e.clientY >= r.top - m && e.clientY <= r.bottom + m;
@@ -645,7 +684,8 @@ function press(el) {
   haptic();
   el.classList.add('pressed');
   setTimeout(() => el.classList.remove('pressed'), 140);
-  if (a.type === 'page') { goPage(a.page); return; }
+  if (a.type === 'page') { if (FS.open) closeFocus(); goPage(a.page); return; }
+  if (a.type === 'remote') { openRemote(); return; }
   if (!S.connected) { flash(el, 'err'); toast('Sem conexão com o PC', 'err'); return; }
   S.pending.set(b.id, el);
   send({ type: 'press', id: b.id });
@@ -669,7 +709,7 @@ function onResult(m) {
   if (m.id === '_save') { if (!m.ok) toast(m.msg, 'err'); return; }
   let el = S.pending.get(m.id);
   S.pending.delete(m.id);
-  if (!el || !el.isConnected) el = $(`#deck .key[data-id="${CSS.escape(m.id)}"]`);
+  if (!el || !el.isConnected) el = $(`.key[data-id="${CSS.escape(m.id)}"]`);
   if (el && !(m.ok && m.sub)) flash(el, m.ok ? 'ok' : 'err');
   if (m.msg) toast(m.msg, m.ok ? '' : 'err');
 }
@@ -699,6 +739,7 @@ function closeSheet() { $('#sheet').classList.add('hidden'); $('#sheetCard').inn
 $('#sheet').addEventListener('click', e => { if (e.target.id === 'sheet') closeSheet(); });
 document.addEventListener('keydown', e => {
   if (S.capturing) return;
+  if (RM.open) { rmHardwareKey(e); return; }
   if (FS.open) {
     if (e.key === 'Escape') closeFocus();
     else if (e.key === 'ArrowLeft') fsGo(FS.idx - 1);
@@ -746,7 +787,8 @@ function openEditor(id, fresh) {
   if (!orig) return;
   const d = clone(orig);
   d.size = d.size || '1x1';
-  S.draft = { b: d, isNew: !!fresh, auto: suggestion(d.action || {}) };
+  const loc = fresh ? null : locate(id);
+  S.draft = { b: d, isNew: !!fresh, auto: suggestion(d.action || {}), pin: !!loc?.pinned };
   const opt = (list, val) => list.map(([v, l]) => `<option value="${esc(v)}"${v === val ? ' selected' : ''}>${esc(l)}</option>`).join('');
   openSheet(`
     <div class="sheet-head">
@@ -757,7 +799,9 @@ function openEditor(id, fresh) {
     <div class="field"><label for="eLabel">Nome</label><input id="eLabel" maxlength="40" value="${esc(d.label)}"></div>
     <div class="field"><label for="eType">Ação</label><select id="eType">${opt(ACTIONS, d.action.type)}</select></div>
     <div id="eParams"></div>
-    <div class="field"><label for="eSize">Tamanho</label><select id="eSize">${opt(SIZES, d.size)}</select>
+    <div class="field" id="ePinRow"><label class="toggle"><span>${icon('pin')} Fixar no topo</span> <input type="checkbox" id="ePin" ${S.draft.pin ? 'checked' : ''}></label>
+      <div class="hint">Aparece em todas as páginas, embaixo das abas, e também na tela cheia. Até ${MAX_PINNED} botões fixos.</div></div>
+    <div class="field" id="eSizeRow"><label for="eSize">Tamanho</label><select id="eSize">${opt(SIZES, d.size)}</select>
       <div class="hint">Blocos maiores ocupam mais quadradinhos da grade (ótimo para gráficos e para o painel de música).</div></div>
     <div class="field" id="eHoldRow"><label class="toggle">Segurar para acionar <input type="checkbox" id="eHold" ${d.hold ? 'checked' : ''}></label>
       <div class="hint">Para botões perigosos (fechar janela, bloquear, desligar…): só aciona se ficar apertado meio segundo.</div></div>
@@ -793,7 +837,7 @@ function openEditor(id, fresh) {
     if (SIZE_FOR[d.action.type] && d.size === '1x1') d.size = SIZE_FOR[d.action.type];
     else if (SIZE_FOR[oldType] && d.size === SIZE_FOR[oldType] && !SIZE_FOR[d.action.type]) d.size = '1x1';
     $('#eSize').value = d.size;
-    holdRow();
+    holdRow(); pinRow();
     applySuggestion(old);
     renderParams(); renderPreview();
   };
@@ -801,6 +845,17 @@ function openEditor(id, fresh) {
   $('#eHold').onchange = e => { if (e.target.checked) d.hold = true; else delete d.hold; renderPreview(); };
   const holdRow = () => $('#eHoldRow').classList.toggle('hidden', ['stat', 'player', 'none'].includes(d.action.type));
   holdRow();
+  const pinRow = () => {
+    const can = !NOT_PINNABLE.includes(d.action.type);
+    $('#ePinRow').classList.toggle('hidden', !can);
+    $('#eSizeRow').classList.toggle('hidden', can && S.draft.pin);
+  };
+  pinRow();
+  $('#ePin').onchange = e => {
+    const others = (S.layout.pinned || []).filter(x => x.id !== d.id).length;
+    if (e.target.checked && others >= MAX_PINNED) { e.target.checked = false; toast(`Já tem ${MAX_PINNED} botões fixos`, 'err'); return; }
+    S.draft.pin = e.target.checked; pinRow();
+  };
   $('#eIcons').onclick = e => {
     const btn = e.target.closest('button[data-ic]'); if (!btn) return;
     d.icon = btn.dataset.ic; $('#eIconTxt').value = '';
@@ -822,13 +877,14 @@ function openEditor(id, fresh) {
     $('#eLeft').onclick = () => moveButton(-1);
     $('#eRight').onclick = () => moveButton(1);
     $('#eDup').onclick = () => {
-      const page = curPage(); const i = page.buttons.findIndex(x => x.id === d.id);
-      const copy = clone(page.buttons[i]); copy.id = rid();
-      page.buttons.splice(i + 1, 0, copy); persist(); closeSheet(); render(); toast('Botão duplicado');
+      const loc = locate(d.id); if (!loc) return;
+      if (loc.pinned && loc.list.length >= MAX_PINNED) { toast(`Já tem ${MAX_PINNED} botões fixos`, 'err'); return; }
+      const copy = clone(loc.list[loc.i]); copy.id = rid();
+      loc.list.splice(loc.i + 1, 0, copy); persist(); closeSheet(); render(); toast('Botão duplicado');
     };
     $('#eDel').onclick = () => {
       if (!confirm(`Excluir o botão "${d.label || 'sem nome'}"?`)) return;
-      const page = curPage(); page.buttons = page.buttons.filter(x => x.id !== d.id);
+      const loc = locate(d.id); if (loc) loc.list.splice(loc.i, 1);
       persist(); closeSheet(); render();
     };
   }
@@ -1043,20 +1099,25 @@ function saveDraft() {
   if (a.type === 'open' && !String(a.target || '').trim()) return toast('Diga o que abrir', 'err');
   if (a.type === 'run' && !String(a.command || '').trim()) return toast('Escreva o comando', 'err');
   if (a.type === 'clip') a.seconds = Math.max(3, Math.min(300, Number(a.seconds) || 15));
-  const page = curPage();
-  if (S.draft.isNew) page.buttons.push(d);
+  const pin = S.draft.pin && !NOT_PINNABLE.includes(a.type);
+  if (pin) d.size = '1x1';
+  S.layout.pinned = S.layout.pinned || [];
+  const loc = S.draft.isNew ? null : locate(d.id);
+  if (loc && loc.pinned === pin) loc.list[loc.i] = d; // continua no mesmo lugar
   else {
-    const i = page.buttons.findIndex(x => x.id === d.id);
-    if (i >= 0) page.buttons[i] = d;
+    if (pin && S.layout.pinned.length >= MAX_PINNED) return toast(`Já tem ${MAX_PINNED} botões fixos`, 'err');
+    if (loc) loc.list.splice(loc.i, 1);
+    if (pin) S.layout.pinned.push(d); else curPage().buttons.push(d);
+    if (loc) toast(pin ? 'Fixado no topo: aparece em todas as páginas' : 'Saiu do topo e voltou para esta página');
   }
   persist(); closeSheet(); render();
 }
 
 function moveButton(dir) {
-  const page = curPage(); const id = S.draft.b.id;
-  const i = page.buttons.findIndex(x => x.id === id); const j = i + dir;
-  if (i < 0 || j < 0 || j >= page.buttons.length) return;
-  [page.buttons[i], page.buttons[j]] = [page.buttons[j], page.buttons[i]];
+  const loc = locate(S.draft.b.id); if (!loc) return;
+  const list = loc.list, i = loc.i, j = i + dir;
+  if (j < 0 || j >= list.length) return;
+  [list[i], list[j]] = [list[j], list[i]];
   persist(); render(); toast(dir < 0 ? 'Movido para trás' : 'Movido para frente');
 }
 
@@ -1160,6 +1221,7 @@ function buildFocus() {
   $('#fsDots').innerHTML = FS.views.length > 1
     ? FS.views.map((v, i) => `<button data-i="${i}" aria-label="${esc(FS_VIEWS[v][0])}"></button>`).join('') : '';
   $('#fsClose').innerHTML = icon('x');
+  $('#fsPinned').innerHTML = pinnedHTML(true);
   $('#fsPrev').innerHTML = icon('left');
   $('#fsNext').innerHTML = icon('right');
   const r = String(fsRange());
@@ -1452,6 +1514,222 @@ function swipePage(dir) {
   return true;
 }
 
+// ------------------------------------------------------------------ mouse e teclado
+// Touchpad e teclado para mexer no PC pelo celular. Gestos do touchpad:
+//   1 dedo move · toque = clique · toque duplo e arraste = arrastar
+//   2 dedos rolam (como no iPhone) · toque com 2 dedos = botão direito
+const RM = { open: false, mods: new Set(), lastWarn: 0 };
+const TP = { n: 0, max: 0, start: 0, sx: 0, sy: 0, last: null, moved: false, dragPending: false, dragging: false,
+  lastTap: 0, mx: 0, my: 0, wx: 0, wy: 0, raf: 0 };
+const RM_SPEEDS = [0.7, 1.0, 1.4, 1.9, 2.6];
+const rmSpeed = () => Math.max(1, Math.min(5, Number(LS.get('pd_rm_speed', '3')) || 3));
+// [tecla, rótulo] — "mod:" = fica ligada até a próxima tecla; "combo:" = atalho pronto
+const RM_KEYS = [
+  ['esc', 'Esc'], ['tab', 'Tab'], ['mod:ctrl', 'Ctrl'], ['mod:alt', 'Alt'], ['mod:shift', 'Shift'], ['mod:win', 'Win'],
+  ['left', '←'], ['up', '↑'], ['down', '↓'], ['right', '→'], ['backspace', 'ic:backspace'], ['delete', 'Del'], ['enter', 'Enter'],
+  ['combo:alt+tab', 'Alt+Tab'], ['combo:ctrl+c', 'Copiar'], ['combo:ctrl+v', 'Colar'], ['combo:ctrl+z', 'Desfazer'],
+  ['combo:ctrl+a', 'Tudo'], ['combo:win+d', 'Área de trab.'], ['printscreen', 'Print'], ['f5', 'F5'], ['f11', 'F11'],
+];
+
+function sendRemote(o) {
+  if (send({ type: 'remote', ...o })) return true;
+  if (Date.now() - RM.lastWarn > 3000) { RM.lastWarn = Date.now(); toast('Sem conexão com o PC', 'err'); }
+  return false;
+}
+function openRemote() {
+  if (FS.open) closeFocus();
+  RM.open = true; RM.mods.clear(); RM.openedAt = performance.now();
+  $('#rmClose').innerHTML = icon('x');
+  $('#rmKb').innerHTML = icon('keyboard');
+  renderRmKeys(); renderRmSpeed();
+  $('#remote').classList.remove('hidden');
+  document.body.classList.add('rm-open');
+  fitRemote();
+}
+function closeRemote() {
+  if (!RM.open) return;
+  RM.open = false;
+  if (TP.dragging) { sendRemote({ op: 'button', button: 'left', action: 'up' }); TP.dragging = false; }
+  for (const b of $$('.rm-mb.down')) { sendRemote({ op: 'button', button: b.dataset.mb, action: 'up' }); b.classList.remove('down'); }
+  $('#kbIn').blur();
+  $('#remote').classList.add('hidden');
+  $('#remote').style.height = ''; $('#remote').style.top = '';
+  document.body.classList.remove('rm-open');
+}
+// com o teclado do iPhone aberto, a tela útil encolhe: o touchpad acompanha (fica acima do teclado)
+function fitRemote() {
+  if (!RM.open) return;
+  const vv = window.visualViewport;
+  const r = $('#remote');
+  if (vv) { r.style.height = `${vv.height}px`; r.style.top = `${vv.offsetTop}px`; }
+  $('#rmKb').classList.toggle('on', document.activeElement === $('#kbIn'));
+}
+if (window.visualViewport) {
+  visualViewport.addEventListener('resize', fitRemote);
+  visualViewport.addEventListener('scroll', fitRemote);
+}
+// o mesmo toque que abriu a tela não pode acionar a tecla que ficou embaixo do dedo
+const rmJustOpened = () => performance.now() - (RM.openedAt || 0) < 450;
+// tocar numa tecla não tira o foco do campo de texto (senão o teclado do celular fecha)
+for (const sel of ['#rmKeys', '#rmKb', '.rm-speed', '#rmClose']) $(sel).addEventListener('pointerdown', e => e.preventDefault());
+$('#rmClose').addEventListener('click', () => { if (!rmJustOpened()) closeRemote(); });
+$('#rmKb').addEventListener('click', () => {
+  if (rmJustOpened()) return;
+  const kb = $('#kbIn');
+  if (document.activeElement === kb) kb.blur();
+  else { kb.value = ' '; kb.focus(); kb.setSelectionRange(1, 1); }
+  setTimeout(fitRemote, 50);
+});
+$('#kbIn').addEventListener('focus', () => setTimeout(fitRemote, 300));
+$('#kbIn').addEventListener('blur', () => setTimeout(fitRemote, 300));
+$('.rm-speed').addEventListener('click', e => {
+  const b = e.target.closest('[data-sp]'); if (!b || rmJustOpened()) return;
+  LS.set('pd_rm_speed', String(Math.max(1, Math.min(5, rmSpeed() + Number(b.dataset.sp)))));
+  renderRmSpeed(); haptic();
+});
+function renderRmSpeed() { $('#rmSpeed').textContent = `vel. ${rmSpeed()}`; }
+
+// --- touchpad
+const tp = $('#tp');
+const center = ts => { let x = 0, y = 0; for (const t of ts) { x += t.clientX; y += t.clientY; } return { x: x / ts.length, y: y / ts.length }; };
+function tpFlush() {
+  TP.raf = 0;
+  const ix = Math.trunc(TP.mx), iy = Math.trunc(TP.my);
+  if (ix || iy) { TP.mx -= ix; TP.my -= iy; sendRemote({ op: 'move', dx: ix, dy: iy }); }
+  const wy = Math.trunc(TP.wy), wx = Math.trunc(TP.wx);
+  if (wy || wx) { TP.wy -= wy; TP.wx -= wx; sendRemote({ op: 'wheel', dy: wy, dx: wx }); }
+}
+const tpSchedule = () => { if (!TP.raf) TP.raf = requestAnimationFrame(tpFlush); };
+function tpMove(dx, dy) { // aceleração: devagar = preciso, rápido = atravessa a tela
+  const v = Math.hypot(dx, dy);
+  const gain = RM_SPEEDS[rmSpeed() - 1] * (1 + Math.min(v, 40) / 14);
+  TP.mx += dx * gain; TP.my += dy * gain; tpSchedule();
+}
+function tpScroll(dx, dy) { // rolagem "natural", como no iPhone: o conteúdo segue o dedo
+  TP.wy += dy * 4; TP.wx -= dx * 4; tpSchedule();
+}
+tp.addEventListener('touchstart', e => {
+  e.preventDefault();
+  const n = e.touches.length;
+  if (TP.n === 0) { // começou um gesto novo
+    TP.start = performance.now(); TP.moved = false; TP.max = n;
+    const c = center(e.touches); TP.sx = c.x; TP.sy = c.y;
+    TP.dragPending = n === 1 && TP.start - TP.lastTap < 300; // toque e, logo em seguida, encostou de novo: vai arrastar
+  }
+  TP.max = Math.max(TP.max, n); TP.n = n; TP.last = center(e.touches);
+  tp.classList.add('active');
+}, { passive: false });
+tp.addEventListener('touchmove', e => {
+  e.preventDefault();
+  const c = center(e.touches);
+  const dx = c.x - TP.last.x, dy = c.y - TP.last.y;
+  TP.last = c;
+  if (!TP.moved && Math.hypot(c.x - TP.sx, c.y - TP.sy) > 8) TP.moved = true;
+  if (e.touches.length >= 2) { tpScroll(dx, dy); return; }
+  if (TP.max >= 2) return; // tirou um dos 2 dedos: não move o ponteiro com o que sobrou
+  if (TP.dragPending && TP.moved && !TP.dragging) {
+    TP.dragging = true; haptic();
+    sendRemote({ op: 'button', button: 'left', action: 'down' });
+  }
+  tpMove(dx, dy);
+}, { passive: false });
+function tpEnd(e, cancelled) {
+  e.preventDefault();
+  TP.n = e.touches.length;
+  if (TP.n) { TP.last = center(e.touches); return; } // ainda tem dedo na tela
+  tp.classList.remove('active');
+  tpFlush();
+  const quick = performance.now() - TP.start < 280 && !TP.moved;
+  if (TP.dragging) { sendRemote({ op: 'button', button: 'left', action: 'up' }); TP.dragging = false; }
+  else if (!cancelled && quick) {
+    if (TP.max >= 2) { sendRemote({ op: 'button', button: 'right', action: 'click' }); haptic(); }
+    else { sendRemote({ op: 'button', button: 'left', action: 'click' }); TP.lastTap = performance.now(); }
+  }
+  TP.dragPending = false;
+}
+tp.addEventListener('touchend', e => tpEnd(e, false), { passive: false });
+tp.addEventListener('touchcancel', e => tpEnd(e, true), { passive: false });
+
+// --- botões do mouse: segurar = botão apertado (dá para arrastar com o outro dedo no touchpad)
+$$('.rm-mb').forEach(b => {
+  const up = () => { if (!b.classList.contains('down')) return; b.classList.remove('down'); sendRemote({ op: 'button', button: b.dataset.mb, action: 'up' }); };
+  b.addEventListener('pointerdown', e => {
+    e.preventDefault();
+    if (rmJustOpened()) return;
+    haptic();
+    b.classList.add('down');
+    try { b.setPointerCapture(e.pointerId); } catch (err) { /* */ }
+    sendRemote({ op: 'button', button: b.dataset.mb, action: 'down' });
+  });
+  b.addEventListener('pointerup', up);
+  b.addEventListener('pointercancel', up);
+});
+
+// --- teclas especiais
+function renderRmKeys() {
+  const firstCombo = RM_KEYS.findIndex(x => x[0].startsWith('combo:'));
+  $('#rmKeys').innerHTML = RM_KEYS.map(([k, l], i) =>
+    `<button class="rm-k${k.startsWith('mod:') && RM.mods.has(k.slice(4)) ? ' on' : ''}${i === firstCombo ? ' sep' : ''}" data-k="${esc(k)}">` +
+    `${l.startsWith('ic:') ? icon(l.slice(3)) : esc(l)}</button>`).join('');
+}
+function rmKey(name) { // aplica Ctrl/Alt/Shift/Win que estiverem ligados
+  const combo = [...RM.mods, name].join('+');
+  sendRemote({ op: 'key', keys: combo });
+  if (RM.mods.size) { RM.mods.clear(); renderRmKeys(); }
+}
+$('#rmKeys').addEventListener('click', e => {
+  const b = e.target.closest('[data-k]'); if (!b || rmJustOpened()) return;
+  haptic();
+  const k = b.dataset.k;
+  if (k.startsWith('mod:')) {
+    const m = k.slice(4);
+    if (RM.mods.has(m)) RM.mods.delete(m); else RM.mods.add(m);
+    renderRmKeys(); return;
+  }
+  if (k.startsWith('combo:')) { sendRemote({ op: 'key', keys: k.slice(6) }); return; }
+  rmKey(k);
+});
+
+// --- teclado do iPhone: cada letra digitada vai na hora para o PC
+const KB_SENTINEL = ' '; // sempre tem 1 caractere no campo, para o "apagar" funcionar mesmo vazio
+function rmText(text) {
+  if (!text) return;
+  if (RM.mods.size && text.length === 1) { // ex.: Ctrl ligado + "c" = Ctrl+C
+    const ch = text.toLowerCase();
+    const name = /^[a-z0-9]$/.test(ch) ? ch : ch === ' ' ? 'space' : null;
+    if (name) { rmKey(name); return; }
+  }
+  sendRemote({ op: 'text', text });
+  if (RM.mods.size) { RM.mods.clear(); renderRmKeys(); }
+}
+const kbIn = $('#kbIn');
+kbIn.addEventListener('beforeinput', e => {
+  const t = e.inputType || '';
+  let handled = true;
+  if (t === 'insertText' || t === 'insertFromPaste' || t === 'insertReplacementText') {
+    rmText(e.data ?? (e.dataTransfer ? e.dataTransfer.getData('text/plain') : ''));
+  } else if (t === 'insertLineBreak' || t === 'insertParagraph') rmKey('enter');
+  else if (t === 'deleteContentBackward' || t === 'deleteWordBackward') rmKey('backspace');
+  else if (t === 'deleteContentForward') rmKey('delete');
+  else handled = false; // composição (ex.: japonês): deixa o "input" abaixo resolver
+  if (handled) e.preventDefault();
+});
+kbIn.addEventListener('input', () => { // navegadores que não deixam cancelar o beforeinput
+  const v = kbIn.value;
+  if (v === KB_SENTINEL) return;
+  if (v.length > KB_SENTINEL.length) rmText(v.slice(KB_SENTINEL.length));
+  else rmKey('backspace');
+  kbIn.value = KB_SENTINEL; kbIn.setSelectionRange(1, 1);
+});
+// teclado físico (iPad / PC): setas, Tab, Esc… também vão para o PC
+const HW_KEYS = { ArrowLeft: 'left', ArrowRight: 'right', ArrowUp: 'up', ArrowDown: 'down', Tab: 'tab', Escape: 'esc',
+  Home: 'home', End: 'end', PageUp: 'pageup', PageDown: 'pagedown', Delete: 'delete' };
+function rmHardwareKey(e) {
+  const name = HW_KEYS[e.key];
+  if (e.key === 'Escape' && document.activeElement !== kbIn) { closeRemote(); return; }
+  if (name && document.activeElement === kbIn) { e.preventDefault(); rmKey(name); }
+}
+
 // ------------------------------------------------------------------ ajustes
 function openSettings() {
   const L = S.layout;
@@ -1491,7 +1769,7 @@ function openSettings() {
     <label class="toggle">Vibrar ao tocar <input type="checkbox" id="sHaptic" ${LS.get('pd_haptic', '1') === '1' ? 'checked' : ''}></label>
     <hr>
     <p class="hint">PC: <b>${esc(location.host)}</b> · ${S.tick.usb ? 'ligado pelo cabo USB' : 'ligado pela rede'}<br>
-    Clipe: ${esc(clipTxt)}${c.encoder ? ` (${esc(c.capture)} + ${esc(c.encoder)})` : ''}<br>
+    Clipe: ${esc(clipTxt)}${c.encoder ? ` (${esc(c.capture)} + ${esc(c.encoder)}${c.direct ? ', direto na GPU' : ''})` : ''}${c.last_check?.fps != null ? ` · último: ${Math.round(c.last_check.fps)} fps` : ''}<br>
     GPU: ${esc(S.tick.gpu?.name || 'não detectada')}</p>
     <div class="row">
       <button class="btn danger" id="sReset">Restaurar botões padrão</button>

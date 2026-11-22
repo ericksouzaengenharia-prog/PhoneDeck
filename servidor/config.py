@@ -53,6 +53,7 @@ DEFAULT_SETTINGS = {
     "notify_on_cable": True,
     # False = a gravação do clipe só roda com o cabo conectado ou o celular aberto (economiza PC)
     "buffer_always_on": False,
+    "remote_control": True,       # touchpad e teclado do celular podem mexer no PC
     # medidor de FPS (PresentMon). Vazio = usa ferramentas\\PresentMon.exe
     "fps": {"presentmon_path": ""},
     "fps_permission_asked": False,
@@ -67,6 +68,9 @@ DEFAULT_SETTINGS = {
         "monitor": 0,           # índice do monitor (ddagrab). 0 = principal
         "encoder": "auto",      # auto | h264_nvenc | h264_amf | h264_qsv | libx264
         "bitrate": "8M",
+        "boost": True,          # prioridade alta para a gravação (CPU, GPU e sem modo economia) — evita clipe travado em jogo pesado
+        "check_fps": True,      # depois de salvar, confere quantos quadros novos por segundo o clipe tem e avisa no celular
+        "draw_mouse": True,     # desenha o cursor no clipe
         "system_audio": True,   # grava o som do PC
         "microphone": True,     # grava o microfone
         "system_volume": 1.0,
@@ -97,22 +101,26 @@ OLD_GAME_LINKS = {
 }
 
 FPS_TILE = _b("fps", "FPS", "speed", "#0e7490", {"type": "stat", "stat": "fps"}, "2x1")
+CLIP_PIN = _b("clip15", "Clipe 15s", "clip", "#b91c1c", {"type": "clip", "seconds": 15})
+REMOTE_BTN = _b("remote", "Mouse e teclado", "mouse", "#0f766e", {"type": "remote"})
+MAX_PINNED = 3
 
 # Versão 4: botões grandes. Cada página cabe numa grade de 3 colunas (em pé) ou
 # 5 colunas (deitado) sem rolar: 15 quadradinhos por página.
 DEFAULT_LAYOUT = {
-    "version": 5,
+    "version": 6,
     "grid": {"portrait": 3, "landscape": 5},
     "showLabels": True,
     "theme": {"name": "classico", "mode": "auto"},
     "fullscreen": ["music", "gpu", "cpu", "ram", "fps"],  # o que aparece na tela cheia, nesta ordem
+    # botões fixos: aparecem em todas as páginas (embaixo das abas) e na tela cheia
+    "pinned": [CLIP_PIN],
     "pages": [
         {
             "id": "principal",
             "name": "Principal",
             "buttons": [
                 _b("spotify", "Spotify", "music", "#14532d", {"type": "player", "app": "spotify"}, "3x2"),
-                _b("clip15", "Clipe 15s", "clip", "#b91c1c", {"type": "clip", "seconds": 15}),
                 _b("mic", "Microfone", "mic", "#9a3412", {"type": "mic"}),
                 _b("desk", "Área de trabalho", "desktop", "#334155", {"type": "desktop"}),
                 _b("mute", "Mudo", "vol-mute", "#9a3412", {"type": "media", "key": "mute"}),
@@ -121,6 +129,7 @@ DEFAULT_LAYOUT = {
                 _b("fortnite", "Fortnite", "🪂", "#7c3aed", {"type": "game", "name": "Fortnite", "target": ""}),
                 _b("rocket", "Rocket League", "⚽", "#1d4ed8", {"type": "game", "name": "Rocket League", "target": ""}),
                 _b("bf6", "Battlefield 6", "🪖", "#c2410c", {"type": "game", "name": "Battlefield 6", "target": ""}),
+                REMOTE_BTN,
             ],
         },
         {
@@ -171,8 +180,9 @@ OLD_DEFAULT_IDS = {
 
 ACTION_TYPES = {
     "media", "mic", "hotkey", "desktop", "clip", "open", "run", "text",
-    "lock", "page", "open_clips", "stat", "player", "game", "none",
+    "lock", "page", "open_clips", "stat", "player", "game", "remote", "none",
 }
+NOT_PINNABLE = {"stat", "player", "none"}  # blocos grandes não cabem na faixa de botões fixos
 SIZES = {"1x1", "2x1", "1x2", "2x2", "3x1", "3x2", "4x1", "4x2"}
 THEMES = {"classico", "minimal", "neon", "fofo", "glass", "rgb"}
 THEME_MODES = {"auto", "dark", "light"}
@@ -235,6 +245,9 @@ def load_layout() -> dict:
                 elif version < 5:
                     data = _migrate_fps(data)
                     print("[layout] bloco de FPS adicionado na página PC")
+                if version < 6:
+                    data = _migrate_pinned(data)
+                    print("[layout] Clipe 15s agora fica fixo no topo; botão Mouse e teclado na página principal")
                 layout = validate_layout(data)
                 if version < LAYOUT_VERSION:
                     _write_json(LAYOUT_PATH, layout)
@@ -303,6 +316,34 @@ def _migrate_fps(data: dict) -> dict:
     return data
 
 
+def _migrate_pinned(data: dict) -> dict:
+    """v5 -> v6: o botão de clipe vira "fixo" (aparece em todas as páginas) e, no lugar dele,
+    entra o botão Mouse e teclado. Nada é apagado."""
+    pages = data.get("pages", [])
+    if isinstance(data.get("pinned"), list) and data["pinned"]:
+        return data
+    clip, where = None, None
+    for p in pages:  # prefere o Clipe 15s padrão; senão, o primeiro botão de clipe
+        for i, b in enumerate(p.get("buttons", [])):
+            if (b.get("action") or {}).get("type") == "clip" and (clip is None or b.get("id") == "clip15"):
+                clip, where = b, (p, i)
+        if clip is not None and clip.get("id") == "clip15":
+            break
+    has_remote = any((b.get("action") or {}).get("type") == "remote" for p in pages for b in p.get("buttons", []))
+    if clip is not None:
+        page, i = where
+        page["buttons"].pop(i)
+        if not has_remote:
+            page["buttons"].insert(i, copy.deepcopy(REMOTE_BTN))
+            has_remote = True
+        data["pinned"] = [clip]
+    else:
+        data["pinned"] = [copy.deepcopy(CLIP_PIN)]
+    if not has_remote and pages:
+        pages[0].setdefault("buttons", []).append(copy.deepcopy(REMOTE_BTN))
+    return data
+
+
 def save_layout(layout: dict) -> dict:
     layout = validate_layout(layout)
     _write_json(LAYOUT_PATH, layout)
@@ -337,6 +378,7 @@ def validate_layout(data) -> dict:
             "mode": theme.get("mode") if theme.get("mode") in THEME_MODES else "auto",
         },
         "fullscreen": _fullscreen(data.get("fullscreen")),
+        "pinned": [],
         "pages": [],
     }
     seen_ids = set()
@@ -346,29 +388,42 @@ def validate_layout(data) -> dict:
         pid = _s(p.get("id"), 64) or f"p{len(out['pages'])}"
         page = {"id": pid, "name": _s(p.get("name"), 40) or "Página", "buttons": []}
         for b in (p.get("buttons") or [])[:120]:
-            if not isinstance(b, dict):
-                continue
-            bid = _s(b.get("id"), 64) or secrets.token_hex(4)
-            while bid in seen_ids:
-                bid = secrets.token_hex(4)
-            seen_ids.add(bid)
-            action = b.get("action") if isinstance(b.get("action"), dict) else {"type": "none"}
-            if action.get("type") not in ACTION_TYPES:
-                action = {"type": "none"}
-            action = {k: (v if isinstance(v, (int, float, bool)) else _s(v, 2000)) for k, v in action.items()}
-            page["buttons"].append({
-                "id": bid,
-                "label": _s(b.get("label"), 40),
-                "icon": _s(b.get("icon"), 40),
-                "color": _s(b.get("color"), 20) or "#1f2937",
-                "action": action,
-                "size": b.get("size") if b.get("size") in SIZES else "1x1",
-                **({"hold": True} if b.get("hold") else {}),
-            })
+            if isinstance(b, dict):
+                page["buttons"].append(_clean_button(b, seen_ids))
         out["pages"].append(page)
     if not out["pages"]:
         raise ValueError("nenhuma página válida")
+    pinned = data.get("pinned") if isinstance(data.get("pinned"), list) else []
+    for b in pinned:
+        if not isinstance(b, dict):
+            continue
+        b = _clean_button(b, seen_ids)
+        if b["action"]["type"] in NOT_PINNABLE or len(out["pinned"]) >= MAX_PINNED:
+            out["pages"][0]["buttons"].append(b)  # não cabe na faixa fixa: volta para a primeira página
+        else:
+            b["size"] = "1x1"
+            out["pinned"].append(b)
     return out
+
+
+def _clean_button(b: dict, seen_ids: set) -> dict:
+    bid = _s(b.get("id"), 64) or secrets.token_hex(4)
+    while bid in seen_ids:
+        bid = secrets.token_hex(4)
+    seen_ids.add(bid)
+    action = b.get("action") if isinstance(b.get("action"), dict) else {"type": "none"}
+    if action.get("type") not in ACTION_TYPES:
+        action = {"type": "none"}
+    action = {k: (v if isinstance(v, (int, float, bool)) else _s(v, 2000)) for k, v in action.items()}
+    return {
+        "id": bid,
+        "label": _s(b.get("label"), 40),
+        "icon": _s(b.get("icon"), 40),
+        "color": _s(b.get("color"), 20) or "#1f2937",
+        "action": action,
+        "size": b.get("size") if b.get("size") in SIZES else "1x1",
+        **({"hold": True} if b.get("hold") else {}),
+    }
 
 
 def _fullscreen(views) -> list:
@@ -379,9 +434,15 @@ def _fullscreen(views) -> list:
     return out or list(DEFAULT_LAYOUT["fullscreen"])
 
 
-def find_button(layout: dict, button_id: str):
+def all_buttons(layout: dict):
+    for b in layout.get("pinned", []):
+        yield b
     for p in layout.get("pages", []):
-        for b in p.get("buttons", []):
-            if b.get("id") == button_id:
-                return b
+        yield from p.get("buttons", [])
+
+
+def find_button(layout: dict, button_id: str):
+    for b in all_buttons(layout):
+        if b.get("id") == button_id:
+            return b
     return None

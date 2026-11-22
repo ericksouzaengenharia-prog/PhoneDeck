@@ -72,13 +72,14 @@ Os botões vêm divididos em três páginas para ficarem **grandes** (3 colunas 
 
 | Página | Botões |
 |---|---|
-| **Principal** | Painel do **Spotify** (capa, aleatório, anterior, play/pause, próxima) · **Clipe 15s** · **Microfone** · **Área de trabalho** · **Mudo** · **Vol −** · **Vol +** · **Fortnite** · **Rocket League** · **Battlefield 6** |
+| **Principal** | Painel do **Spotify** (capa, aleatório, anterior, play/pause, próxima) · **Microfone** · **Área de trabalho** · **Mudo** · **Vol −** · **Vol +** · **Fortnite** · **Rocket League** · **Battlefield 6** · **Mouse e teclado** |
 | **PC** | **FPS do jogo** · Gráficos de **GPU**, **CPU**, **RAM** e **temperatura** · Print · Meus clipes · Gerenciador · **Bloquear PC** e **Fechar janela** (precisam segurar) |
 | **Mais** | Anterior/Play/Próxima · Mutar Discord · Abrir Spotify · Navegador · VRAM · Volume · Digitar texto · Calculadora · Hora · Clipe 30s · Explorador |
 
 Troque de página **deslizando a grade para o lado** (como na tela de início do iPhone) ou tocando nas abas (no topo, ou do lado
 esquerdo com o celular deitado). No PC, use as setas ← → do teclado.
 
+* **Clipe 15s** fica **fixo no topo**, embaixo das abas: aparece em todas as páginas (veja "Botões fixos").
 * **Clipe:** a bolinha no canto mostra o estado (verde = gravando).
 * **Gráficos:** mostram o último minuto, com **máx / méd / mín** ao lado do número. **Toque para abrir em tela cheia**; no PC, passe o mouse sobre o gráfico para ler cada segundo.
 * **Microfone / Mudo:** ficam vermelhos quando estão mutados.
@@ -92,12 +93,44 @@ esquerdo com o celular deitado). No PC, use as setas ← → do teclado.
 * Prefere a resposta instantânea? **Ajustes › Toque › Ao encostar**.
 * Para exigir "segurar" em qualquer botão: modo edição › toque no botão › **Segurar para acionar**.
 
+### Botões fixos
+
+Um botão fixo aparece **em todas as páginas**: embaixo das abas Principal / PC / Mais (com o celular em pé), na coluna da
+esquerda logo abaixo das abas (deitado) e no topo da **tela cheia**. Assim dá para salvar um clipe sem sair do gráfico de FPS.
+
+* Vem com o **Clipe 15s** fixo.
+* Para fixar outro botão: modo edição › toque no botão › **Fixar no topo**. Até 3 botões fixos.
+* Para tirar: desmarque **Fixar no topo**; ele volta para a página que estiver aberta.
+* Gráficos e o painel de música não podem ser fixos (são grandes demais para a faixa).
+
+### Mouse e teclado
+
+O botão **Mouse e teclado** (página Principal) transforma o celular num touchpad com teclado, para mexer no PC de longe.
+
+| No touchpad | Faz |
+|---|---|
+| Arrastar 1 dedo | move o ponteiro (rápido = vai longe, devagar = preciso) |
+| Tocar | clique |
+| Tocar com 2 dedos | botão direito |
+| Arrastar 2 dedos | rola a página (como no iPhone) |
+| Tocar duas vezes e arrastar | arrasta (segura o clique) |
+
+* **Esquerdo / Direito / meio:** botões de verdade. Segure um e arraste no touchpad com o outro dedo para selecionar ou arrastar.
+* **vel. − / +**: velocidade do ponteiro (1 a 5). O Windows ainda aplica a velocidade do mouse dele.
+* **Teclado** (ícone no canto): abre o teclado do iPhone; cada letra vai na hora para o PC (aceita acentos e emoji).
+* Faixa de teclas: Esc, Tab, setas, apagar, Del, Enter, Print, F5, F11 e atalhos prontos (Alt+Tab, Copiar, Colar, Desfazer,
+  Selecionar tudo, Área de trabalho). **Ctrl, Alt, Shift e Win** ficam acesos até a próxima tecla: Ctrl + c = copiar.
+* Fecha no ✕. Se o celular desconectar no meio de um arrasto, o PC solta o botão sozinho.
+* Quem tem o código de acesso consegue mexer no PC: não divulgue o código. Para desligar esta função, use
+  `"remote_control": false` no `settings.json`.
+
 ### Tela cheia
 
 Para acompanhar de longe, com tudo grande:
 
 * **Toque num gráfico** (FPS, GPU, CPU, RAM, temperatura, VRAM) ou no **painel de música** (fora dos botões dele),
   ou no botão de **tela cheia** na barra de cima.
+* Os **botões fixos** (ex.: Clipe 15s) aparecem no topo da tela cheia.
 * **Deslize para os lados** para passar pelos itens. Os pontinhos embaixo mostram onde você está.
 * **Música:** capa grande, música, artista, tempo, e os botões aleatório, anterior, play/pause e próxima.
 * **Gráficos:** número grande, caixas de **máx / méd / mín** (e **1% low** no FPS), gráfico com escala e a linha da média.
@@ -184,6 +217,7 @@ A grade encaixa os blocos sozinha e preenche os buracos.
 | Abrir programa, pasta ou site | `https://twitch.tv`, `spotify:`, `discord:`, `C:\Programas\app.exe`, `%USERPROFILE%\Downloads` |
 | Rodar comando | `shutdown /s /t 60` (desliga em 1 min), qualquer comando do cmd |
 | Digitar texto | digita no programa em foco (aceita acentos e emoji) |
+| Mouse e teclado | abre o touchpad e o teclado no celular |
 | Mostrador ao vivo | FPS do jogo, GPU, temperatura da GPU, VRAM, CPU, RAM, volume, relógio |
 | Ir para outra página | navegação entre páginas |
 | Abrir pasta de clipes / Bloquear o PC / Nada | — |
@@ -208,17 +242,35 @@ Ao tocar no botão, ele junta os últimos N segundos de imagem e de som num `.mp
 Sem celular conectado por 10 minutos, a gravação entra em espera para não pesar no PC.
 
 * Captura pela placa de vídeo (Desktop Duplication) e codifica nela quando possível (NVIDIA → AMD → Intel → CPU).
+  A imagem vai **direto da captura para o codificador da placa**, sem passar pela memória do PC.
+* A gravação roda com **prioridade alta** (CPU acima do normal, fora do modo economia do Windows e prioridade alta na fila da GPU),
+  para não ficar sem vez quando o jogo usa a placa toda.
+* Depois de salvar, o PhoneDeck **confere o clipe**: conta quantos quadros *novos* por segundo ele tem e avisa no celular
+  ("Clipe conferido: 30 fps ✔"). O resultado também aparece na página do PC.
 * Não precisa de "Mixagem estéreo": o som do PC é capturado direto do Windows (WASAPI).
 * Trocou o fone ou o microfone padrão? Ele acompanha sozinho.
 
 **Som fora de sincronia?** Ajuste `video_delay_ms` no `settings.json`: se o som vem **antes** da imagem, aumente (ex.: 250);
 se vem **depois**, diminua (ex.: 50).
 
-**Já usa NVIDIA Instant Replay, Xbox Game Bar ou o Replay Buffer do OBS?** Use o modo atalho:
+### Clipe travado ou picotado em jogo pesado
+
+O arquivo sempre sai com 30 fps, mas quando a placa de vídeo está no limite (99% de uso), a captura não consegue pegar
+imagens novas a tempo e repete a anterior. O vídeo fica "picotado". O aviso **"Clipe com só X fps"** no celular indica isso.
+
+1. **Limite o FPS do jogo** uns 10% abaixo do que ele costuma alcançar (ou ao Hz do monitor). É o que mais resolve:
+   a placa ganha folga para gravar e o jogo quase não muda. No Battlefield 6, Fortnite e Rocket League isso fica nas
+   opções de vídeo/gráficos (limite de quadros / FPS máximo). Também dá para usar o limitador do painel da NVIDIA ou AMD.
+2. Use o jogo em **tela cheia sem bordas** (janela sem bordas). A captura de tela fica mais estável.
+3. Veja na página do PC a linha **Clipe**: o ideal é `direto na GPU` e `prioridade na GPU: alta`.
+4. Ainda picotado? Use o replay do driver, que grava direto no chip de vídeo com perda mínima: **NVIDIA Instant Replay**
+   (GeForce/NVIDIA App, atalho `alt+f10`) ou **AMD Instant Replay** (Adrenalin, atalho `ctrl+shift+s`), no modo atalho abaixo.
+
+**Já usa NVIDIA Instant Replay, AMD Instant Replay, Xbox Game Bar ou o Replay Buffer do OBS?** Use o modo atalho:
 ```json
 "clip": { "mode": "hotkey", "hotkey": "alt+f10" }
 ```
-(`alt+f10` = NVIDIA; `win+alt+g` = Xbox Game Bar; no OBS, o atalho que você definiu para "Salvar replay".)
+(`alt+f10` = NVIDIA; `ctrl+shift+s` = AMD; `win+alt+g` = Xbox Game Bar; no OBS, o atalho que você definiu para "Salvar replay".)
 
 ## 7. Arquivo `settings.json`
 
@@ -232,6 +284,7 @@ Criado na primeira execução, na pasta do PhoneDeck. **Desligue o PhoneDeck ant
 | `open_browser_on_start` | true | Abre a página de QR code ao ligar pelo ícone |
 | `notify_on_cable` | true | Aviso do Windows quando o cabo do iPhone conecta |
 | `buffer_always_on` | false | `true` = grava o clipe sempre, mesmo sem celular conectado |
+| `remote_control` | true | `false` = desliga o Mouse e teclado (o celular não mexe no ponteiro nem digita) |
 | `ffmpeg_path` | "" | Caminho do ffmpeg.exe, se não estiver no PATH |
 | `clip.mode` | "ffmpeg" | `ffmpeg`, `hotkey` ou `off` |
 | `clip.buffer_seconds` | 30 | Quantos segundos ficam guardados (máx. 300) |
@@ -240,6 +293,9 @@ Criado na primeira execução, na pasta do PhoneDeck. **Desligue o PhoneDeck ant
 | `clip.monitor` | 0 | Qual monitor gravar (0 = principal) |
 | `clip.encoder` | "auto" | `auto`, `h264_nvenc`, `h264_amf`, `h264_qsv`, `libx264` |
 | `clip.bitrate` | "8M" | Qualidade (use 12M–20M em 1440p/4K) |
+| `clip.boost` | true | Prioridade alta para a gravação (CPU, GPU e sem modo economia). `false` = prioridade baixa, como antes |
+| `clip.check_fps` | true | Confere cada clipe salvo e avisa quantos fps reais ele tem |
+| `clip.draw_mouse` | true | Desenha o cursor no clipe |
 | `clip.system_audio` | true | Grava o som do PC |
 | `clip.microphone` | true | Grava o microfone |
 | `clip.system_volume` / `clip.mic_volume` | 1.0 | Volume de cada um no clipe (0.0 a 2.0) |
@@ -258,7 +314,9 @@ Criado na primeira execução, na pasta do PhoneDeck. **Desligue o PhoneDeck ant
 | O iPhone fica em "Procurando o PC…" | Firewall: Painel de Controle › Firewall do Windows › Permitir um aplicativo › marque **Python** em Privada **e** Pública. |
 | Pede código de acesso | Digite o código da página do PC (ícone PhoneDeck). |
 | Atalhos não funcionam dentro de um jogo | Se o jogo roda como administrador, rode o PhoneDeck como administrador também. |
+| Mouse e teclado não mexem numa janela | Mesma regra: janelas de administrador (Gerenciador de Tarefas, instaladores) só aceitam se o PhoneDeck também rodar como administrador. A tela de bloqueio e o UAC nunca aceitam. |
 | Bolinha vermelha no botão de clipe | ffmpeg não instalado ou falhou. Veja `%TEMP%\phonedeck_buffer\ffmpeg_log.txt`; tente `"capture": "gdigrab"`. |
+| Clipe picotado / "Clipe com só X fps" | Veja "Clipe travado ou picotado em jogo pesado" na seção 6: limite o FPS do jogo. |
 | Clipe sem som | Veja na página do PC a linha "Áudio no clipe". Rode o `iniciar.bat` de novo para instalar as bibliotecas de áudio. |
 | Painel do Spotify em "Spotify fechado" | Abra o Spotify **do PC** (o app). No modo "qualquer player", ele mostra o que estiver tocando. |
 | Aleatório não funciona | O Spotify aceita; navegadores e alguns players não oferecem aleatório para o Windows. |

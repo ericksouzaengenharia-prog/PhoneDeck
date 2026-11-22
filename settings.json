@@ -1,0 +1,34 @@
+{
+  "port": 8765,
+  "token": "4yxjb6cn",
+  "require_token": true,
+  "open_browser_on_start": true,
+  "ffmpeg_path": "",
+  "notify_on_cable": true,
+  "buffer_always_on": false,
+  "remote_control": true,
+  "fps": {
+    "presentmon_path": ""
+  },
+  "fps_permission_asked": false,
+  "clip": {
+    "mode": "ffmpeg",
+    "buffer_seconds": 30,
+    "fps": 30,
+    "capture": "auto",
+    "monitor": 0,
+    "encoder": "auto",
+    "bitrate": "8M",
+    "boost": true,
+    "check_fps": true,
+    "draw_mouse": true,
+    "system_audio": true,
+    "microphone": true,
+    "system_volume": 1.0,
+    "mic_volume": 1.0,
+    "video_delay_ms": 150,
+    "hotkey": "alt+f10",
+    "output_dir": "",
+    "audio_device": ""
+  }
+}

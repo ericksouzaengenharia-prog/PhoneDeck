@@ -1,0 +1,322 @@
+{
+  "version": 1,
+  "grid": {
+    "portrait": 3,
+    "landscape": 5
+  },
+  "showLabels": true,
+  "pages": [
+    {
+      "id": "principal",
+      "name": "Principal",
+      "buttons": [
+        {
+          "id": "clip15",
+          "label": "Clipe 15s",
+          "icon": "clip",
+          "color": "#b91c1c",
+          "action": {
+            "type": "clip",
+            "seconds": 15
+          }
+        },
+        {
+          "id": "gpu",
+          "label": "GPU",
+          "icon": "gpu",
+          "color": "#14532d",
+          "action": {
+            "type": "stat",
+            "stat": "gpu"
+          }
+        },
+        {
+          "id": "cpu",
+          "label": "CPU",
+          "icon": "cpu",
+          "color": "#1e3a5f",
+          "action": {
+            "type": "stat",
+            "stat": "cpu"
+          }
+        },
+        {
+          "id": "ram",
+          "label": "RAM",
+          "icon": "ram",
+          "color": "#3b2a5c",
+          "action": {
+            "type": "stat",
+            "stat": "ram"
+          }
+        },
+        {
+          "id": "desk",
+          "label": "Área de trabalho",
+          "icon": "desktop",
+          "color": "#334155",
+          "action": {
+            "type": "desktop"
+          }
+        },
+        {
+          "id": "prev",
+          "label": "Anterior",
+          "icon": "prev",
+          "color": "#1f2937",
+          "action": {
+            "type": "media",
+            "key": "prev"
+          }
+        },
+        {
+          "id": "play",
+          "label": "Play/Pause",
+          "icon": "play-pause",
+          "color": "#065f46",
+          "action": {
+            "type": "media",
+            "key": "playpause"
+          }
+        },
+        {
+          "id": "next",
+          "label": "Próxima",
+          "icon": "next",
+          "color": "#1f2937",
+          "action": {
+            "type": "media",
+            "key": "next"
+          }
+        },
+        {
+          "id": "vdown",
+          "label": "Vol −",
+          "icon": "vol-down",
+          "color": "#1f2937",
+          "action": {
+            "type": "media",
+            "key": "voldown"
+          }
+        },
+        {
+          "id": "vup",
+          "label": "Vol +",
+          "icon": "vol-up",
+          "color": "#1f2937",
+          "action": {
+            "type": "media",
+            "key": "volup"
+          }
+        },
+        {
+          "id": "mute",
+          "label": "Mudo",
+          "icon": "vol-mute",
+          "color": "#7c2d12",
+          "action": {
+            "type": "media",
+            "key": "mute"
+          }
+        },
+        {
+          "id": "mic",
+          "label": "Microfone",
+          "icon": "mic",
+          "color": "#7c2d12",
+          "action": {
+            "type": "mic"
+          }
+        },
+        {
+          "id": "print",
+          "label": "Print",
+          "icon": "camera",
+          "color": "#334155",
+          "action": {
+            "type": "hotkey",
+            "keys": "win+printscreen"
+          }
+        },
+        {
+          "id": "clips",
+          "label": "Meus clipes",
+          "icon": "folder",
+          "color": "#334155",
+          "action": {
+            "type": "open_clips"
+          }
+        },
+        {
+          "id": "goapps",
+          "label": "Apps",
+          "icon": "grid",
+          "color": "#4338ca",
+          "action": {
+            "type": "page",
+            "page": "apps"
+          }
+        }
+      ]
+    },
+    {
+      "id": "apps",
+      "name": "Apps",
+      "buttons": [
+        {
+          "id": "back",
+          "label": "Voltar",
+          "icon": "back",
+          "color": "#4338ca",
+          "action": {
+            "type": "page",
+            "page": "principal"
+          }
+        },
+        {
+          "id": "browser",
+          "label": "Navegador",
+          "icon": "globe",
+          "color": "#1e3a5f",
+          "action": {
+            "type": "open",
+            "target": "https://www.google.com",
+            "args": ""
+          }
+        },
+        {
+          "id": "explorer",
+          "label": "Explorador",
+          "icon": "folder",
+          "color": "#78350f",
+          "action": {
+            "type": "open",
+            "target": "explorer.exe",
+            "args": ""
+          }
+        },
+        {
+          "id": "taskmgr",
+          "label": "Gerenciador",
+          "icon": "chart",
+          "color": "#14532d",
+          "action": {
+            "type": "hotkey",
+            "keys": "ctrl+shift+esc"
+          }
+        },
+        {
+          "id": "spotify",
+          "label": "Spotify",
+          "icon": "music",
+          "color": "#166534",
+          "action": {
+            "type": "open",
+            "target": "spotify:",
+            "args": ""
+          }
+        },
+        {
+          "id": "discmute",
+          "label": "Mutar Discord",
+          "icon": "headset",
+          "color": "#3730a3",
+          "action": {
+            "type": "hotkey",
+            "keys": "ctrl+shift+m"
+          }
+        },
+        {
+          "id": "calc",
+          "label": "Calculadora",
+          "icon": "calc",
+          "color": "#334155",
+          "action": {
+            "type": "open",
+            "target": "calc.exe",
+            "args": ""
+          }
+        },
+        {
+          "id": "gputemp",
+          "label": "Temp. GPU",
+          "icon": "thermo",
+          "color": "#7c2d12",
+          "action": {
+            "type": "stat",
+            "stat": "gputemp"
+          }
+        },
+        {
+          "id": "vram",
+          "label": "VRAM",
+          "icon": "chip",
+          "color": "#14532d",
+          "action": {
+            "type": "stat",
+            "stat": "vram"
+          }
+        },
+        {
+          "id": "clock",
+          "label": "Hora",
+          "icon": "clock",
+          "color": "#1f2937",
+          "action": {
+            "type": "stat",
+            "stat": "clock"
+          }
+        },
+        {
+          "id": "vol",
+          "label": "Volume",
+          "icon": "volume",
+          "color": "#1f2937",
+          "action": {
+            "type": "stat",
+            "stat": "volume"
+          }
+        },
+        {
+          "id": "hello",
+          "label": "Digitar texto",
+          "icon": "type",
+          "color": "#334155",
+          "action": {
+            "type": "text",
+            "text": "gg wp!"
+          }
+        },
+        {
+          "id": "altf4",
+          "label": "Fechar janela",
+          "icon": "close",
+          "color": "#7f1d1d",
+          "action": {
+            "type": "hotkey",
+            "keys": "alt+f4"
+          }
+        },
+        {
+          "id": "lock",
+          "label": "Bloquear PC",
+          "icon": "lock",
+          "color": "#334155",
+          "action": {
+            "type": "lock"
+          }
+        },
+        {
+          "id": "clip30",
+          "label": "Clipe 30s",
+          "icon": "clip",
+          "color": "#991b1b",
+          "action": {
+            "type": "clip",
+            "seconds": 30
+          }
+        }
+      ]
+    }
+  ]
+}

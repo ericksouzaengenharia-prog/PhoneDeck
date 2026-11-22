@@ -1,0 +1,417 @@
+{
+  "version": 5,
+  "grid": {
+    "portrait": 3,
+    "landscape": 5
+  },
+  "showLabels": true,
+  "theme": {
+    "name": "minimal",
+    "mode": "dark"
+  },
+  "fullscreen": [
+    "music",
+    "gpu",
+    "cpu",
+    "ram",
+    "fps"
+  ],
+  "pages": [
+    {
+      "id": "principal",
+      "name": "Principal",
+      "buttons": [
+        {
+          "id": "spotify",
+          "label": "Spotify",
+          "icon": "music",
+          "color": "#14532d",
+          "action": {
+            "type": "player",
+            "app": "spotify"
+          },
+          "size": "3x2"
+        },
+        {
+          "id": "clip15",
+          "label": "Clipe 15s",
+          "icon": "clip",
+          "color": "#b91c1c",
+          "action": {
+            "type": "clip",
+            "seconds": 15
+          },
+          "size": "1x1"
+        },
+        {
+          "id": "mic",
+          "label": "Microfone",
+          "icon": "mic",
+          "color": "#9a3412",
+          "action": {
+            "type": "mic"
+          },
+          "size": "1x1"
+        },
+        {
+          "id": "desk",
+          "label": "Área de trabalho",
+          "icon": "desktop",
+          "color": "#334155",
+          "action": {
+            "type": "desktop"
+          },
+          "size": "1x1"
+        },
+        {
+          "id": "mute",
+          "label": "Mudo",
+          "icon": "vol-mute",
+          "color": "#9a3412",
+          "action": {
+            "type": "media",
+            "key": "mute"
+          },
+          "size": "1x1"
+        },
+        {
+          "id": "vdown",
+          "label": "Vol −",
+          "icon": "vol-down",
+          "color": "#334155",
+          "action": {
+            "type": "media",
+            "key": "voldown"
+          },
+          "size": "1x1"
+        },
+        {
+          "id": "vup",
+          "label": "Vol +",
+          "icon": "vol-up",
+          "color": "#334155",
+          "action": {
+            "type": "media",
+            "key": "volup"
+          },
+          "size": "1x1"
+        },
+        {
+          "id": "fortnite",
+          "label": "Fortnite",
+          "icon": "🪂",
+          "color": "#7c3aed",
+          "action": {
+            "type": "game",
+            "name": "Fortnite",
+            "target": ""
+          },
+          "size": "1x1"
+        },
+        {
+          "id": "rocket",
+          "label": "Rocket League",
+          "icon": "⚽",
+          "color": "#1d4ed8",
+          "action": {
+            "type": "game",
+            "name": "Rocket League",
+            "target": ""
+          },
+          "size": "1x1"
+        },
+        {
+          "id": "bf6",
+          "label": "Battlefield 6",
+          "icon": "🪖",
+          "color": "#c2410c",
+          "action": {
+            "type": "open",
+            "target": "C:\\Program Files\\EA Games\\Battlefield 6\\bf6.exe",
+            "args": ""
+          },
+          "size": "1x1"
+        }
+      ]
+    },
+    {
+      "id": "pc",
+      "name": "PC",
+      "buttons": [
+        {
+          "id": "fps",
+          "label": "FPS",
+          "icon": "speed",
+          "color": "#0e7490",
+          "action": {
+            "type": "stat",
+            "stat": "fps"
+          },
+          "size": "2x1"
+        },
+        {
+          "id": "gpu",
+          "label": "GPU",
+          "icon": "gpu",
+          "color": "#166534",
+          "action": {
+            "type": "stat",
+            "stat": "gpu"
+          },
+          "size": "2x1"
+        },
+        {
+          "id": "cpu",
+          "label": "CPU",
+          "icon": "cpu",
+          "color": "#1e40af",
+          "action": {
+            "type": "stat",
+            "stat": "cpu"
+          },
+          "size": "2x1"
+        },
+        {
+          "id": "ram",
+          "label": "RAM",
+          "icon": "ram",
+          "color": "#6b21a8",
+          "action": {
+            "type": "stat",
+            "stat": "ram"
+          },
+          "size": "2x1"
+        },
+        {
+          "id": "gputemp",
+          "label": "Temp. GPU",
+          "icon": "thermo",
+          "color": "#9a3412",
+          "action": {
+            "type": "stat",
+            "stat": "gputemp"
+          },
+          "size": "2x1"
+        },
+        {
+          "id": "print",
+          "label": "Print",
+          "icon": "camera",
+          "color": "#334155",
+          "action": {
+            "type": "hotkey",
+            "keys": "win+printscreen"
+          },
+          "size": "1x1"
+        },
+        {
+          "id": "clips",
+          "label": "Meus clipes",
+          "icon": "folder",
+          "color": "#334155",
+          "action": {
+            "type": "open_clips"
+          },
+          "size": "1x1"
+        },
+        {
+          "id": "taskmgr",
+          "label": "Gerenciador",
+          "icon": "chart",
+          "color": "#166534",
+          "action": {
+            "type": "hotkey",
+            "keys": "ctrl+shift+esc"
+          },
+          "size": "1x1"
+        },
+        {
+          "id": "lock",
+          "label": "Bloquear PC",
+          "icon": "lock",
+          "color": "#334155",
+          "action": {
+            "type": "lock"
+          },
+          "size": "1x1",
+          "hold": true
+        },
+        {
+          "id": "altf4",
+          "label": "Fechar janela",
+          "icon": "close",
+          "color": "#7f1d1d",
+          "action": {
+            "type": "hotkey",
+            "keys": "alt+f4"
+          },
+          "size": "1x1",
+          "hold": true
+        }
+      ]
+    },
+    {
+      "id": "apps",
+      "name": "Mais",
+      "buttons": [
+        {
+          "id": "prev",
+          "label": "Anterior",
+          "icon": "prev",
+          "color": "#334155",
+          "action": {
+            "type": "media",
+            "key": "prev"
+          },
+          "size": "1x1"
+        },
+        {
+          "id": "play",
+          "label": "Play/Pause",
+          "icon": "play-pause",
+          "color": "#065f46",
+          "action": {
+            "type": "media",
+            "key": "playpause"
+          },
+          "size": "1x1"
+        },
+        {
+          "id": "next",
+          "label": "Próxima",
+          "icon": "next",
+          "color": "#334155",
+          "action": {
+            "type": "media",
+            "key": "next"
+          },
+          "size": "1x1"
+        },
+        {
+          "id": "discmute",
+          "label": "Mutar Discord",
+          "icon": "headset",
+          "color": "#4338ca",
+          "action": {
+            "type": "hotkey",
+            "keys": "ctrl+shift+m"
+          },
+          "size": "1x1"
+        },
+        {
+          "id": "spotapp",
+          "label": "Abrir Spotify",
+          "icon": "music",
+          "color": "#15803d",
+          "action": {
+            "type": "open",
+            "target": "spotify:",
+            "args": ""
+          },
+          "size": "1x1"
+        },
+        {
+          "id": "browser",
+          "label": "Navegador",
+          "icon": "globe",
+          "color": "#1e40af",
+          "action": {
+            "type": "open",
+            "target": "https://www.google.com",
+            "args": ""
+          },
+          "size": "1x1"
+        },
+        {
+          "id": "vram",
+          "label": "VRAM",
+          "icon": "chip",
+          "color": "#166534",
+          "action": {
+            "type": "stat",
+            "stat": "vram"
+          },
+          "size": "2x1"
+        },
+        {
+          "id": "vol",
+          "label": "Volume",
+          "icon": "volume",
+          "color": "#334155",
+          "action": {
+            "type": "stat",
+            "stat": "volume"
+          },
+          "size": "1x1"
+        },
+        {
+          "id": "hello",
+          "label": "Digitar texto",
+          "icon": "type",
+          "color": "#334155",
+          "action": {
+            "type": "text",
+            "text": "gg wp!"
+          },
+          "size": "1x1"
+        },
+        {
+          "id": "calc",
+          "label": "Calculadora",
+          "icon": "calc",
+          "color": "#334155",
+          "action": {
+            "type": "open",
+            "target": "calc.exe",
+            "args": ""
+          },
+          "size": "1x1"
+        },
+        {
+          "id": "clock",
+          "label": "Hora",
+          "icon": "clock",
+          "color": "#334155",
+          "action": {
+            "type": "stat",
+            "stat": "clock"
+          },
+          "size": "1x1"
+        },
+        {
+          "id": "clip30",
+          "label": "Clipe 30s",
+          "icon": "clip",
+          "color": "#991b1b",
+          "action": {
+            "type": "clip",
+            "seconds": 30
+          },
+          "size": "1x1"
+        },
+        {
+          "id": "explorer",
+          "label": "Explorador",
+          "icon": "folder",
+          "color": "#a16207",
+          "action": {
+            "type": "open",
+            "target": "explorer.exe",
+            "args": ""
+          },
+          "size": "1x1"
+        },
+        {
+          "id": "4g1dlos8",
+          "label": "Meus clipes",
+          "icon": "folder",
+          "color": "#334155",
+          "action": {
+            "type": "open_clips"
+          },
+          "size": "1x1"
+        }
+      ]
+    }
+  ]
+}

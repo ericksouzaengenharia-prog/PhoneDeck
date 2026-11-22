@@ -30,7 +30,7 @@ Em **Settings › General › Social preview**, envie `docs/screenshots/social-p
 cd PhoneDeck
 git init
 git add .
-git commit -m "PhoneDeck 2.4"
+git commit -m "PhoneDeck 2.6"
 git branch -M main
 git remote add origin https://github.com/SEU-USUARIO/phonedeck.git
 git push -u origin main
@@ -38,20 +38,22 @@ git push -u origin main
 O `.gitignore` já impede que o seu `settings.json` (com o código de acesso) seja enviado.
 
 ### Criar a versão (Release)
-Em **Releases › Draft a new release**: tag `v2.4`, título `PhoneDeck 2.4`, e cole o texto abaixo.
+Em **Releases › Draft a new release**: tag `v2.6`, título `PhoneDeck 2.6`, e cole o texto abaixo.
 Anexe um `.zip` do projeto, para quem não usa Git.
 
 ---
 
-## Texto da Release v2.4
+## Texto da Release v2.6
 
-**PhoneDeck 2.4: o seu iPhone como Stream Deck do PC** 🎛️
+**PhoneDeck 2.6: o seu iPhone como Stream Deck do PC** 🎛️
 
 Novidades:
 - 🎬 **Clipe dos últimos 15 s com som do PC + microfone**
 - 🎯 **FPS do jogo** com gráfico, máx, méd, mín e 1% low (qualquer jogo, sem sobreposição na tela)
 - 📈 **Gráficos ao vivo** de GPU, CPU e RAM (último minuto)
 - 🖥️ **Tela cheia** deslizante com música, GPU, CPU, RAM e FPS
+- 🖱️ **Mouse e teclado**: o celular vira touchpad e teclado do PC
+- 📌 **Botões fixos** em todas as páginas (Clipe 15s sempre à mão)
 - 🎵 **Painel do Spotify** com capa, aleatório, anterior, play/pause e próxima
 - 🎮 Botões prontos para **Fortnite, Rocket League e Battlefield 6**, que acham o jogo na Epic, EA app ou Steam
 - 👆 **Botões grandes**, toque à prova de engano e páginas que trocam deslizando

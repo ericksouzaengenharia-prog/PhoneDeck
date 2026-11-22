@@ -17,6 +17,8 @@
 <body>
   <header id="bar">
     <nav id="tabs"></nav>
+    <!-- botões fixos: aparecem em todas as páginas (embaixo das abas) -->
+    <div id="pinned" class="pinned"></div>
     <span id="conn" class="conn" title="Conexão com o PC"></span>
     <button id="fsBtn" class="iconbtn" aria-label="Tela cheia" title="Tela cheia"></button>
     <button id="setBtn" class="iconbtn hidden" aria-label="Ajustes"></button>
@@ -35,12 +37,39 @@
     <div id="fsTrack" class="fs-track"></div>
     <div class="fs-top">
       <button id="fsClose" class="iconbtn fs-close" aria-label="Fechar a tela cheia"></button>
-      <span id="fsConn" class="fs-conn">Procurando o PC…</span>
+      <div class="fs-mid"><span id="fsConn" class="fs-conn">Procurando o PC…</span><div id="fsPinned" class="pinned"></div></div>
       <div id="fsRange" class="seg fs-range"><button data-r="60">1 min</button><button data-r="300">5 min</button></div>
     </div>
     <button id="fsPrev" class="fs-nav prev" aria-label="Anterior"></button>
     <button id="fsNext" class="fs-nav next" aria-label="Próximo"></button>
     <div id="fsDots" class="fs-dots"></div>
+  </div>
+
+  <!-- Mouse e teclado: touchpad e teclado para mexer no PC pelo celular -->
+  <div id="remote" class="remote hidden" role="dialog" aria-modal="true" aria-label="Mouse e teclado">
+    <div class="rm-top">
+      <button id="rmClose" class="iconbtn" aria-label="Fechar"></button>
+      <b class="rm-title">Mouse e teclado</b>
+      <div class="rm-speed" title="Velocidade do ponteiro">
+        <button class="iconbtn" data-sp="-1" aria-label="Mais devagar">−</button><span id="rmSpeed"></span><button class="iconbtn" data-sp="1" aria-label="Mais rápido">+</button>
+      </div>
+      <button id="rmKb" class="iconbtn" aria-label="Teclado"></button>
+    </div>
+    <div id="tp" class="tp">
+      <div class="tp-hint">
+        <b>1 dedo</b> move · <b>toque</b> clica<br>
+        <b>2 dedos</b> rolam · <b>toque com 2</b> = botão direito<br>
+        <b>toque duplo e arraste</b> = arrastar
+      </div>
+    </div>
+    <div class="rm-btns">
+      <button class="rm-mb" data-mb="left">Esquerdo</button>
+      <button class="rm-mb mid" data-mb="middle" aria-label="Botão do meio"></button>
+      <button class="rm-mb" data-mb="right">Direito</button>
+    </div>
+    <div id="rmKeys" class="rm-keys"></div>
+    <textarea id="kbIn" class="kb-in" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"
+              enterkeyhint="send" aria-label="Digitar no PC"></textarea>
   </div>
 
   <div id="toast" role="status" aria-live="polite"></div>

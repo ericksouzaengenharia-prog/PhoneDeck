@@ -1,0 +1,12 @@
+aiohttp>=3.9
+psutil>=5.9
+qrcode>=7.4
+nvidia-ml-py>=12.535 ; sys_platform == "win32"
+comtypes>=1.2 ; sys_platform == "win32"
+pycaw>=20230407 ; sys_platform == "win32"
+numpy>=1.24 ; sys_platform == "win32"
+soundcard>=0.4.3 ; sys_platform == "win32"
+winrt-runtime>=3.0 ; sys_platform == "win32" and python_version >= "3.11"
+winrt-Windows.Foundation>=3.0 ; sys_platform == "win32" and python_version >= "3.11"
+winrt-Windows.Media.Control>=3.0 ; sys_platform == "win32" and python_version >= "3.11"
+winrt-Windows.Storage.Streams>=3.0 ; sys_platform == "win32" and python_version >= "3.11"

@@ -27,12 +27,14 @@
 | | |
 |---|---|
 | 🎬 **Clipe dos últimos segundos** | Grava a tela em segundo plano e salva os últimos 15 s (ou 30 s) num `.mp4`, **com o som do PC e o microfone**. Usa a placa de vídeo (NVIDIA, AMD ou Intel). |
-| 📈 **Gráficos ao vivo** | GPU, CPU, RAM, temperatura e VRAM com gráfico do último minuto. Toque para ver mínimo, média e máximo. |
+| 📈 **Gráficos ao vivo** | GPU, CPU, RAM, temperatura e VRAM com gráfico do último minuto e máx / méd / mín ao lado. |
+| 🖥️ **Tela cheia** | Toque num gráfico ou no painel de música para ver em tela cheia e deslize para passar por música, GPU, CPU, RAM e FPS (você escolhe quais e a ordem). |
+| 🎯 **FPS do jogo** | FPS do jogo aberto com gráfico, máx, méd, mín e 1% low. Funciona em qualquer jogo, sem sobreposição na tela (usa o PresentMon da Intel). |
 | 🎵 **Painel do Spotify** | Capa, música e artista, com aleatório, voltar, play/pause e próxima. |
 | 🎮 **Jogos e apps** | Acha sozinho os jogos instalados na **Epic, EA app e Steam** e abre pelo launcher certo, além de qualquer programa, pasta ou site. |
 | 🎙️ **Controles do PC** | Mutar microfone (fica vermelho quando mutado), volume, mudo, área de trabalho, print, bloquear o PC. |
 | ⌨️ **Atalhos e macros** | Qualquer combinação de teclas (`ctrl+shift+m`) ou sequências (`ctrl+c, alt+tab, ctrl+v`), digitar textos e rodar comandos. |
-| 👆 **Toque à prova de engano** | Botões grandes (3 colunas em pé, 5 deitado). O botão só aciona quando você solta o dedo: encostou no errado, arraste para fora. Botões perigosos pedem para segurar. |
+| 👆 **Toque à prova de engano** | Botões grandes (3 colunas em pé, 5 deitado) e páginas que trocam deslizando para o lado. O botão só aciona quando você solta o dedo: encostou no errado, arraste para fora. Botões perigosos pedem para segurar. |
 | ✏️ **Totalmente editável** | Pelo próprio celular: nome, ícone (ou emoji), cor, ação, tamanho do bloco e posição, páginas e número de colunas. |
 | 🎨 **Temas** | Clássico, Minimal, Neon, Fofo, Liquid Glass e Gamer RGB, cada um com modo claro, escuro ou automático. |
 | 🔌 **Liga sozinho** | Ícone na área de trabalho e início automático: conectou o cabo do iPhone, o PhoneDeck acorda e avisa. |
@@ -41,8 +43,14 @@
 
 <p align="center"><img src="docs/screenshots/paginas.png" width="85%" alt="Páginas Principal, PC e Mais"></p>
 
-**Principal** tem o dia a dia (Spotify, clipe, microfone, volume e jogos), **PC** tem os gráficos e as ferramentas, e **Mais** tem o resto.
-Cada página cabe na tela sem rolar, com botões grandes.
+**Principal** tem o dia a dia (Spotify, clipe, microfone, volume e jogos), **PC** tem o FPS do jogo, os gráficos e as ferramentas, e **Mais** tem o resto.
+Cada página cabe na tela sem rolar, com botões grandes. Para trocar de página, deslize para o lado.
+
+## Tela cheia
+
+<p align="center"><img src="docs/screenshots/tela-cheia.png" width="85%" alt="Música, GPU e FPS em tela cheia"></p>
+
+Toque num gráfico ou no painel de música e deslize para os lados: controles de música grandes, e gráficos com escala, máx / méd / mín, 1% low no FPS e escolha entre 1 e 5 minutos. A tela do iPhone não apaga enquanto ela está aberta.
 
 ## Temas
 
@@ -66,6 +74,7 @@ flowchart LR
     B --> E["GPU / CPU / RAM<br/>(NVML e contadores do Windows)"]
     B --> F["Spotify<br/>(controle de mídia do Windows)"]
     B --> G["Clipe da tela<br/>(ffmpeg + áudio WASAPI)"]
+    B --> H["FPS do jogo<br/>(PresentMon)"]
 ```
 
 * O **PC** roda um servidor pequeno em Python. Ele também entrega o app do celular.
@@ -104,6 +113,7 @@ PhoneDeck/
 │  ├─ media.py            painel de música (controle de mídia do Windows)
 │  ├─ games.py            encontra jogos da Epic, EA app, Steam e atalhos
 │  ├─ stats.py            CPU, RAM e GPU
+│  ├─ fps.py              FPS do jogo aberto (PresentMon)
 │  ├─ audio.py · winkeys.py · atalhos.py · config.py
 └─ web/                   app do celular (HTML/CSS/JS puro, sem dependências)
 ```
@@ -112,7 +122,7 @@ PhoneDeck/
 
 **Funciona com Android?** Pelo Wi-Fi, sim. Pelo cabo, em geral funciona ativando a "Ancoragem USB" do Android.<br>
 **Funciona no Mac ou no Linux?** O servidor roda em modo demonstração (para desenvolver a interface), mas as ações usam APIs do Windows.<br>
-**Precisa de internet?** Não. Tudo fica entre o celular e o PC.<br>
+**Precisa de internet?** Não. Tudo fica entre o celular e o PC (só a primeira instalação baixa as bibliotecas e o PresentMon).<br>
 **O microfone fica gravando?** Só enquanto o clipe está ativo, e só os últimos segundos, guardados na memória RAM. Nada vai para o disco até você apertar o botão de clipe. Dá para desligar no `settings.json`.
 
 ## Contribuindo

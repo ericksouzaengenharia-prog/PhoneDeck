@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="PhoneDeck">
+  <meta name="theme-color" content="#0b0d12">
+  <link rel="manifest" href="__MANIFEST__">
+  <link rel="apple-touch-icon" href="static/icon-180.png">
+  <link rel="icon" type="image/png" href="static/icon-192.png">
+  <link rel="stylesheet" href="static/style.css?v=__VERSION__">
+  <title>PhoneDeck</title>
+</head>
+<body>
+  <header id="bar">
+    <nav id="tabs"></nav>
+    <span id="conn" class="conn" title="Conexão com o PC"></span>
+    <button id="fsBtn" class="iconbtn" aria-label="Tela cheia" title="Tela cheia"></button>
+    <button id="setBtn" class="iconbtn hidden" aria-label="Ajustes"></button>
+    <button id="editBtn" class="iconbtn" aria-label="Editar"></button>
+  </header>
+
+  <div id="offline" class="hidden">
+    <b>Procurando o PC…</b>
+    <span>Confira se o PhoneDeck está aberto no PC e se o cabo (Ponto de Acesso) ou o Wi-Fi está conectado.</span>
+  </div>
+
+  <main id="deck"></main>
+
+  <!-- Tela cheia: música e gráficos, um por vez, deslizando para os lados (montada pelo app.js) -->
+  <div id="focus" class="focus hidden" role="dialog" aria-modal="true" aria-label="Tela cheia">
+    <div id="fsTrack" class="fs-track"></div>
+    <div class="fs-top">
+      <button id="fsClose" class="iconbtn fs-close" aria-label="Fechar a tela cheia"></button>
+      <span id="fsConn" class="fs-conn">Procurando o PC…</span>
+      <div id="fsRange" class="seg fs-range"><button data-r="60">1 min</button><button data-r="300">5 min</button></div>
+    </div>
+    <button id="fsPrev" class="fs-nav prev" aria-label="Anterior"></button>
+    <button id="fsNext" class="fs-nav next" aria-label="Próximo"></button>
+    <div id="fsDots" class="fs-dots"></div>
+  </div>
+
+  <div id="toast" role="status" aria-live="polite"></div>
+
+  <!-- Janela de edição (montada pelo app.js) -->
+  <div id="sheet" class="sheet hidden" role="dialog" aria-modal="true">
+    <div class="sheet-card" id="sheetCard"></div>
+  </div>
+
+  <!-- Pedido do código de acesso -->
+  <div id="login" class="overlay hidden">
+    <div class="login-card">
+      <h2>Conectar ao PC</h2>
+      <p>Digite o <b>código de acesso</b> que aparece na janela do PhoneDeck no PC.</p>
+      <input id="pin" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" placeholder="ex.: k7m2xq9a">
+      <p id="pinErr" class="err"></p>
+      <button id="pinOk" class="btn primary">Conectar</button>
+    </div>
+  </div>
+
+  <script src="static/icons.js?v=__VERSION__"></script>
+  <script src="static/app.js?v=__VERSION__"></script>
+</body>
+</html>
